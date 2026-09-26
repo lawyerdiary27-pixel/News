@@ -1,0 +1,4943 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CyberNexus V4.5 - Accident News & Slabs</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body{
+    font-family:Arial,Helvetica,sans-serif;
+    background:#f8fafc;
+}
+.dark body{background:#020617}
+.card{
+    background:white;
+    border-radius:16px;
+    box-shadow:0 4px 18px rgba(15,23,42,.08);
+}
+.dark .card{background:#0f172a;color:#e2e8f0}
+.news-card{transition:.2s}
+.news-card:hover{
+    transform:translateY(-2px);
+    box-shadow:0 8px 24px rgba(15,23,42,.12);
+}
+.result-scroll{
+    max-height:600px;
+    overflow-y:auto;
+}
+textarea{resize:vertical}
+.person-card{
+    border-left:4px solid #2563eb;
+}
+.person-card.duplicate{
+    border-left-color:#dc2626;
+    background:#fff7f7;
+}
+.dark .person-card.duplicate{background:#2b1111}
+.source-badge{
+    font-size:11px;
+    padding:3px 8px;
+    border-radius:999px;
+    background:#e0f2fe;
+    color:#075985;
+    font-weight:700;
+}
+.latest-badge{
+    font-size:11px;
+    padding:3px 8px;
+    border-radius:999px;
+    background:#dcfce7;
+    color:#166534;
+    font-weight:700;
+}
+.muted{color:#64748b}
+.dark .muted{color:#94a3b8}
+.spinner{
+    width:18px;
+    height:18px;
+    border:3px solid #cbd5e1;
+    border-top-color:#2563eb;
+    border-radius:50%;
+    animation:spin .8s linear infinite;
+    display:inline-block;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.confidence{
+    font-size:10px;
+    padding:2px 7px;
+    border-radius:10px;
+    background:#f1f5f9;
+    color:#475569;
+}
+.dark .confidence{
+    background:#1e293b;
+    color:#cbd5e1;
+}
+.modal{
+    position:fixed;
+    inset:0;
+    background:rgba(2,6,23,.72);
+    z-index:9999;
+    display:none;
+    overflow-y:auto;
+    padding:20px;
+}
+.modal.show{display:block}
+.modal-panel{
+    max-width:1250px;
+    margin:0 auto;
+    background:white;
+    border-radius:18px;
+    box-shadow:0 20px 60px rgba(0,0,0,.3);
+}
+.dark .modal-panel{
+    background:#0f172a;
+    color:#e2e8f0;
+}
+.dashboard-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:12px;
+}
+.stat-box{
+    border:1px solid #e2e8f0;
+    border-radius:12px;
+    padding:14px;
+}
+.dark .stat-box{border-color:#334155}
+.case-report{
+    border-left:4px solid #2563eb;
+}
+.timeline-item{
+    position:relative;
+    padding-left:28px;
+    padding-bottom:18px;
+}
+.timeline-item:before{
+    content:"";
+    position:absolute;
+    left:6px;
+    top:5px;
+    width:10px;
+    height:10px;
+    border-radius:50%;
+    background:#2563eb;
+}
+.timeline-item:after{
+    content:"";
+    position:absolute;
+    left:10px;
+    top:16px;
+    bottom:0;
+    width:2px;
+    background:#cbd5e1;
+}
+.timeline-item:last-child:after{display:none}
+.case-pill{
+    display:inline-flex;
+    align-items:center;
+    gap:4px;
+    font-size:11px;
+    padding:3px 8px;
+    border-radius:999px;
+    background:#eef2ff;
+    color:#3730a3;
+    font-weight:700;
+}
+.strong-duplicate{
+    background:#fee2e2;
+    color:#991b1b;
+}
+.possible-duplicate{
+    background:#fef3c7;
+    color:#92400e;
+}
+.new-record{
+    background:#dcfce7;
+    color:#166534;
+}
+.print-field{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:7px 9px;
+    border:1px solid #e2e8f0;
+    border-radius:8px;
+}
+.dark .print-field{border-color:#334155}
+@media print{
+    body *{visibility:hidden!important}
+    #printArea,#printArea *{visibility:visible!important}
+    #printArea{
+        position:absolute;
+        left:0;
+        top:0;
+        width:100%;
+        padding:20px;
+    }
+}
+</style>
+</head>
+
+<body class="text-slate-800">
+
+<header class="bg-slate-900 text-white shadow-lg">
+<div class="max-w-7xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-3">
+    <div>
+        <h1 class="text-2xl font-bold">⚡ CyberNexus</h1>
+        <p class="text-xs text-slate-300">Accident News & Slabs — V4.5 Case Intelligence</p>
+    </div>
+
+    <div class="flex items-center gap-2">
+        <span class="text-xs text-slate-300">Records</span>
+        <span id="recordCount"
+              class="bg-blue-600 px-3 py-1 rounded-full text-sm font-bold">0</span>
+    </div>
+</div>
+</header>
+
+<main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+
+<!-- ================= SEARCH ================= -->
+
+<section class="card p-5">
+
+<div class="flex flex-wrap justify-between gap-3 items-center">
+    <div>
+        <h2 class="text-lg font-bold">🌐 Live Web Scan</h2>
+        <p class="text-xs muted">
+            हिंदी में ताज़ा दुर्घटना / सड़क हादसा समाचार खोजें
+        </p>
+    </div>
+
+    <div id="todayBadge" class="latest-badge">
+        आज की ताज़ा खबरें
+    </div>
+</div>
+
+<div class="grid md:grid-cols-12 gap-3 mt-4">
+
+<div class="md:col-span-5">
+<label class="text-xs font-semibold">Search Keyword</label>
+<input
+    id="searchKeyword"
+    value="सड़क हादसा बरेली"
+    placeholder="जैसे: सड़क हादसा बरेली"
+    class="w-full mt-1 border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500">
+</div>
+
+<div class="md:col-span-2">
+<label class="text-xs font-semibold">समय</label>
+<select id="dateRange"
+        class="w-full mt-1 border rounded-lg px-3 py-2">
+    <option value="today">आज</option>
+    <option value="24h">पिछले 24 घंटे</option>
+    <option value="3d">पिछले 3 दिन</option>
+    <option value="7d">पिछले 7 दिन</option>
+    <option value="all">सभी उपलब्ध</option>
+</select>
+</div>
+
+<div class="md:col-span-5 flex flex-wrap items-end gap-2">
+
+<button onclick="scanInternet()"
+ class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold">
+🔎 Google न्यूज़
+</button>
+
+<button onclick="searchSource('amar')"
+ class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg font-semibold">
+📰 अमर उजाला
+</button>
+
+<button onclick="searchSource('jagran')"
+ class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-semibold">
+🗞️ दैनिक जागरण
+</button>
+
+<button onclick="searchSource('bhaskar')"
+ class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg font-semibold">
+📰 दैनिक भास्कर
+</button>
+
+<button onclick="searchAllSources()"
+ class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg font-semibold">
+⚡ सभी स्रोत
+</button>
+
+</div>
+</div>
+
+<div id="searchStatus" class="mt-4 text-sm muted">
+तैयार है। आज की ताज़ा हिंदी खबरें खोजें।
+</div>
+
+<div id="newsResults" class="result-scroll mt-4 space-y-3"></div>
+
+</section>
+
+
+<!-- ================= ARTICLE INPUT ================= -->
+
+<section class="card p-5">
+
+<div class="flex flex-wrap justify-between items-center gap-2">
+<div>
+<h2 class="text-lg font-bold">📄 Article / News Text</h2>
+<p class="text-xs muted">
+पूरी खबर paste करें या ऊपर से “Use Article” दबाएँ।
+</p>
+</div>
+
+<div class="flex gap-2 flex-wrap">
+<button onclick="autoExtract()"
+ class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-semibold">
+🧠 Smart Auto Extract
+</button>
+
+<button onclick="extractAllPersons()"
+ class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-semibold">
+👥 सभी व्यक्ति निकालें
+</button>
+</div>
+</div>
+
+<textarea id="newsText"
+ rows="9"
+ placeholder="यहाँ हिंदी समाचार का पूरा टेक्स्ट आएगा..."
+ class="w-full mt-4 border rounded-xl p-4 text-sm outline-none focus:ring-2 focus:ring-purple-500"></textarea>
+
+<div class="grid md:grid-cols-2 gap-3 mt-4">
+
+<div>
+<label class="text-xs font-semibold">News Source</label>
+<input id="newsSource"
+ class="w-full border rounded-lg px-3 py-2 mt-1"
+ placeholder="Google News / Amar Ujala / Jagran / Bhaskar">
+</div>
+
+<div>
+<label class="text-xs font-semibold">Source Link</label>
+<input id="newsLink"
+ class="w-full border rounded-lg px-3 py-2 mt-1"
+ placeholder="https://...">
+</div>
+
+</div>
+</section>
+
+
+<!-- ================= BASIC RECORD ================= -->
+
+<section class="card p-5">
+
+<div class="flex justify-between items-center gap-2">
+<h2 class="text-lg font-bold">📋 Accident Record</h2>
+
+<span id="extractionConfidence" class="confidence">
+Extraction: —
+</span>
+</div>
+
+<div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+
+<div>
+<label class="text-xs font-semibold">नाम</label>
+<input id="personName"
+ class="w-full border rounded-lg px-3 py-2 mt-1">
+</div>
+
+<div>
+<label class="text-xs font-semibold">पिता / पति का नाम</label>
+<input id="fatherName"
+ class="w-full border rounded-lg px-3 py-2 mt-1">
+</div>
+
+<div>
+<label class="text-xs font-semibold">वाहन</label>
+<input id="vehicleType"
+ class="w-full border rounded-lg px-3 py-2 mt-1">
+</div>
+
+<div>
+<label class="text-xs font-semibold">कारण</label>
+<input id="cause"
+ class="w-full border rounded-lg px-3 py-2 mt-1">
+</div>
+
+<div>
+<label class="text-xs font-semibold">स्थान</label>
+<input id="place"
+ class="w-full border rounded-lg px-3 py-2 mt-1">
+</div>
+
+<div>
+<label class="text-xs font-semibold">घटना की तारीख</label>
+<input id="accidentDate" type="date"
+ class="w-full border rounded-lg px-3 py-2 mt-1">
+</div>
+
+<div>
+<label class="text-xs font-semibold">स्थिति</label>
+<select id="status"
+ class="w-full border rounded-lg px-3 py-2 mt-1">
+<option value="">चुनें</option>
+<option value="Fatal">मृतक</option>
+<option value="Injured">घायल</option>
+<option value="Under Investigation">जांच/अन्य</option>
+</select>
+</div>
+
+</div>
+
+<details class="mt-5">
+<summary class="cursor-pointer font-semibold text-sm">
+🔬 Advanced Extracted Information
+</summary>
+
+<div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+
+<div>
+<label class="text-xs font-semibold">उम्र</label>
+<input id="personAge"
+ class="w-full border rounded-lg px-3 py-2 mt-1">
+</div>
+
+<div>
+<label class="text-xs font-semibold">पता</label>
+<input id="personAddress"
+ class="w-full border rounded-lg px-3 py-2 mt-1">
+</div>
+
+<div>
+<label class="text-xs font-semibold">थाना</label>
+<input id="policeStation"
+ class="w-full border rounded-lg px-3 py-2 mt-1">
+</div>
+
+<div>
+<label class="text-xs font-semibold">घटना का समय</label>
+<input id="accidentTime"
+ class="w-full border rounded-lg px-3 py-2 mt-1">
+</div>
+
+<div>
+<label class="text-xs font-semibold">मृतक संख्या</label>
+<input id="deathCount" type="number" min="0"
+ class="w-full border rounded-lg px-3 py-2 mt-1">
+</div>
+
+<div>
+<label class="text-xs font-semibold">घायल संख्या</label>
+<input id="injuredCount" type="number" min="0"
+ class="w-full border rounded-lg px-3 py-2 mt-1">
+</div>
+
+</div>
+</details>
+
+<div class="flex flex-wrap gap-2 mt-5">
+
+<button onclick="saveRecord()"
+ class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg font-bold">
+💾 Save Record
+</button>
+
+<button onclick="clearForm()"
+ class="bg-slate-200 hover:bg-slate-300 text-slate-800 px-5 py-2 rounded-lg font-semibold">
+साफ करें
+</button>
+
+<button onclick="extractAllPersons()"
+ class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg font-bold">
+👥 Multi-Person Extract
+</button>
+
+</div>
+</section>
+
+
+<!-- ================= MULTI PERSON ================= -->
+
+<section class="card p-5">
+
+<div class="flex flex-wrap justify-between items-center gap-3">
+
+<div>
+<h2 class="text-lg font-bold">👥 Article → सभी मृतक / घायल</h2>
+<p class="text-xs muted">
+प्रत्येक व्यक्ति का अलग complete record तैयार होगा।
+</p>
+</div>
+
+<div class="flex gap-2">
+<span id="personFoundBadge"
+ class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">
+0 व्यक्ति
+</span>
+
+<span id="duplicateBadge"
+ class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold">
+0 Duplicate
+</span>
+</div>
+
+</div>
+
+<div id="multiPersonPreview" class="mt-4 space-y-3">
+<div class="text-sm muted">अभी कोई extracted person नहीं है।</div>
+</div>
+
+<div class="flex flex-wrap gap-2 mt-5">
+
+<button onclick="checkDuplicates()"
+ class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg font-semibold">
+🔍 Duplicate Check
+</button>
+
+<button onclick="saveAllPersons()"
+ class="bg-green-700 hover:bg-green-800 text-white px-5 py-2 rounded-lg font-bold">
+💾 सभी Valid Records Save करें
+</button>
+
+</div>
+</section>
+
+
+<!-- ================= CASES QUICK VIEW ================= -->
+
+<section class="card p-5">
+
+<div class="flex flex-wrap justify-between items-center gap-3">
+<div>
+<h2 class="text-lg font-bold">🧠 Case Intelligence</h2>
+<p class="text-xs muted">
+एक accident की सभी reports और persons को एक Case में देखें।
+</p>
+</div>
+
+<button onclick="renderCasesQuick()"
+ class="bg-indigo-700 hover:bg-indigo-800 text-white px-4 py-2 rounded-lg font-semibold">
+🔄 Cases Refresh
+</button>
+</div>
+
+<div id="casesQuick" class="mt-4 grid md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+
+</section>
+
+
+<!-- ================= RECORDS ================= -->
+
+<section class="card p-5">
+
+<div class="flex flex-wrap justify-between items-center gap-3">
+
+<h2 class="text-lg font-bold">🗂️ Saved Records</h2>
+
+<div class="flex gap-2 flex-wrap">
+<button onclick="openAllPrint()"
+ class="bg-emerald-700 hover:bg-emerald-800 text-white px-4 py-2 rounded-lg font-semibold">
+🖨️ Selected Field Print
+</button>
+
+<button onclick="exportWord()"
+ class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg font-semibold">
+📄 Word Export
+</button>
+</div>
+
+</div>
+
+<div class="overflow-x-auto mt-4">
+
+<table class="w-full text-sm border-collapse">
+
+<thead>
+<tr class="bg-slate-100">
+<th class="border p-2 text-left">#</th>
+<th class="border p-2 text-left">नाम</th>
+<th class="border p-2 text-left">पिता</th>
+<th class="border p-2 text-left">वाहन</th>
+<th class="border p-2 text-left">स्थान</th>
+<th class="border p-2 text-left">स्थिति</th>
+<th class="border p-2 text-left">तारीख</th>
+<th class="border p-2 text-left">Source</th>
+<th class="border p-2 text-left">Case</th>
+<th class="border p-2 text-left">Action</th>
+</tr>
+</thead>
+
+<tbody id="recordsTable"></tbody>
+
+</table>
+</div>
+</section>
+
+
+<!-- ================= CHART ================= -->
+
+<section class="card p-5">
+<h2 class="text-lg font-bold mb-4">📊 Vehicle Breakdown</h2>
+<div class="max-w-md mx-auto">
+<canvas id="vehicleChart"></canvas>
+</div>
+</section>
+
+</main>
+
+
+<!-- ================= CASE DASHBOARD MODAL ================= -->
+
+<div id="caseModal" class="modal">
+
+<div class="modal-panel">
+
+<div class="p-5 border-b flex flex-wrap justify-between items-start gap-3">
+
+<div>
+<h2 id="caseModalTitle" class="text-2xl font-bold">
+🧠 Case Intelligence Dashboard
+</h2>
+<p id="caseModalSubtitle" class="text-sm muted mt-1"></p>
+</div>
+
+<div class="flex gap-2 flex-wrap">
+<button onclick="openCasePrint()"
+ class="bg-emerald-700 text-white px-4 py-2 rounded-lg font-semibold">
+🖨️ Print
+</button>
+
+<button onclick="closeCaseModal()"
+ class="bg-slate-700 text-white px-4 py-2 rounded-lg font-semibold">
+✕ Close
+</button>
+</div>
+
+</div>
+
+<div id="caseDashboard" class="p-5 space-y-5"></div>
+
+</div>
+</div>
+
+
+<!-- ================= DUPLICATE PLAN MODAL ================= -->
+
+<div id="duplicateModal" class="modal">
+
+<div class="modal-panel max-w-5xl">
+
+<div class="p-5 border-b flex justify-between items-center">
+<div>
+<h2 class="text-xl font-bold">🔍 Save Plan / Duplicate Intelligence</h2>
+<p class="text-xs muted">
+हर व्यक्ति के लिए Save, Merge या Skip तय करें।
+</p>
+</div>
+
+<button onclick="closeDuplicateModal()"
+ class="bg-slate-700 text-white px-3 py-2 rounded-lg">
+✕
+</button>
+</div>
+
+<div id="duplicatePlanBody" class="p-5 space-y-3"></div>
+
+<div class="p-5 border-t flex flex-wrap justify-end gap-2">
+<button onclick="applySavePlan()"
+ class="bg-green-700 text-white px-5 py-2 rounded-lg font-bold">
+💾 Apply Save Plan
+</button>
+</div>
+
+</div>
+</div>
+
+
+<!-- ================= PRINT FIELD MODAL ================= -->
+
+<div id="printModal" class="modal">
+
+<div class="modal-panel max-w-3xl">
+
+<div class="p-5 border-b flex justify-between">
+<div>
+<h2 class="text-xl font-bold">🖨️ Selected Fields</h2>
+<p class="text-xs muted">
+एक बार fields चुनें। चयन localStorage में सुरक्षित रहेगा।
+</p>
+</div>
+
+<button onclick="closePrintModal()"
+ class="bg-slate-700 text-white px-3 py-2 rounded-lg">
+✕
+</button>
+</div>
+
+<div class="p-5">
+
+<div class="grid md:grid-cols-2 gap-2" id="printFields"></div>
+
+<div class="flex gap-2 mt-5">
+<button onclick="savePrintSettings()"
+ class="bg-blue-700 text-white px-5 py-2 rounded-lg font-bold">
+💾 Save Selection
+</button>
+
+<button onclick="printSelectedAll()"
+ class="bg-emerald-700 text-white px-5 py-2 rounded-lg font-bold">
+🖨️ Print All Records
+</button>
+</div>
+
+</div>
+</div>
+</div>
+
+
+<!-- ================= PRINT AREA ================= -->
+
+<div id="printArea" style="display:none"></div>
+
+
+<script>
+
+/* ============================================================
+   CYBERNEXUS V4.5
+   BASE-COMPATIBLE DATA LAYER
+============================================================ */
+
+const RECORD_KEY = "myAccidentRecords";
+const CASE_KEY = "myAccidentCases";
+const NEWS_KEY = "myAccidentNewsReports";
+const MERGE_KEY = "myAccidentMergeHistory";
+const PRINT_KEY = "myAccidentPrintFields";
+
+let records = loadJSON(RECORD_KEY,[]);
+let cases = loadJSON(CASE_KEY,[]);
+let newsReports = loadJSON(NEWS_KEY,[]);
+let mergeHistory = loadJSON(MERGE_KEY,[]);
+
+let currentNewsResults = [];
+let extractedPersons = [];
+let vehicleChart = null;
+
+let currentCaseId = null;
+let currentDuplicatePlan = [];
+let editingRecordId = null;
+
+
+/* ============================================================
+   GENERIC STORAGE
+============================================================ */
+
+function loadJSON(key,fallback){
+    try{
+        const x = JSON.parse(localStorage.getItem(key) || "null");
+        return Array.isArray(x) || typeof x === "object" && x !== null
+            ? x
+            : fallback;
+    }catch(e){
+        return fallback;
+    }
+}
+
+function persist(key,value){
+    localStorage.setItem(key,JSON.stringify(value));
+}
+
+function persistRecords(){
+    persist(RECORD_KEY,records);
+}
+
+function persistCases(){
+    persist(CASE_KEY,cases);
+}
+
+function persistNews(){
+    persist(NEWS_KEY,newsReports);
+}
+
+function persistMergeHistory(){
+    persist(MERGE_KEY,mergeHistory);
+}
+
+
+/* ============================================================
+   BASIC HELPERS
+============================================================ */
+
+function pad(n){
+    return String(n).padStart(2,"0");
+}
+
+function localDateInput(d=new Date()){
+    return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+}
+
+function formatDate(d){
+    if(!d || isNaN(new Date(d))) return "—";
+    return new Date(d).toLocaleDateString("hi-IN",{
+        day:"2-digit",
+        month:"short",
+        year:"numeric"
+    });
+}
+
+function normalizeHindiDigits(text){
+    const map={
+        "०":"0","१":"1","२":"2","३":"3","४":"4",
+        "५":"5","६":"6","७":"7","८":"8","९":"9"
+    };
+    return String(text||"").replace(/[०-९]/g,m=>map[m]);
+}
+
+function normalizeKey(text){
+    return String(text||"")
+        .toLowerCase()
+        .normalize("NFKC")
+        .replace(/[^\p{L}\p{N}]+/gu," ")
+        .replace(/\s+/g," ")
+        .trim();
+}
+
+function cleanText(text){
+    const div=document.createElement("div");
+    div.innerHTML=text||"";
+    return (div.textContent||div.innerText||"")
+        .replace(/\s+/g," ")
+        .trim();
+}
+
+function escapeHTML(value){
+    return String(value??"")
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+}
+
+function escapeAttribute(value){
+    return escapeHTML(value).replace(/`/g,"&#096;");
+}
+
+function makeId(prefix="id"){
+    return prefix+"-"+Date.now()+"-"+Math.random().toString(36).slice(2,9);
+}
+
+
+/* ============================================================
+   DATE
+============================================================ */
+
+function todayMinusDays(days){
+    const d=new Date();
+    d.setDate(d.getDate()-days);
+    return localDateInput(d);
+}
+
+function tomorrowDate(){
+    const d=new Date();
+    d.setDate(d.getDate()+1);
+    return localDateInput(d);
+}
+
+function googleDateQuery(){
+
+    const mode=document.getElementById("dateRange").value;
+
+    if(mode==="all") return "";
+
+    let days=1;
+
+    if(mode==="today") days=1;
+    if(mode==="24h") days=1;
+    if(mode==="3d") days=3;
+    if(mode==="7d") days=7;
+
+    return ` after:${todayMinusDays(days)} before:${tomorrowDate()}`;
+}
+
+function isToday(date){
+    if(!date) return false;
+
+    const d=new Date(date);
+    const now=new Date();
+
+    return d.getFullYear()===now.getFullYear() &&
+           d.getMonth()===now.getMonth() &&
+           d.getDate()===now.getDate();
+}
+
+function isInsideDateRange(pubDate){
+
+    const mode=document.getElementById("dateRange").value;
+
+    if(mode==="all" || !pubDate) return true;
+
+    const published=new Date(pubDate);
+
+    if(isNaN(published)) return true;
+
+    const now=new Date();
+
+    let hours=24;
+
+    if(mode==="today") hours=36;
+    if(mode==="24h") hours=24;
+    if(mode==="3d") hours=72;
+    if(mode==="7d") hours=168;
+
+    return now.getTime()-published.getTime()
+        <= hours*60*60*1000;
+}
+
+
+/* ============================================================
+   TODAY
+============================================================ */
+
+function updateTodayBadge(){
+    const el=document.getElementById("todayBadge");
+    if(el){
+        el.textContent="📅 आज: "+
+            new Date().toLocaleDateString("hi-IN",{
+                day:"2-digit",
+                month:"long",
+                year:"numeric"
+            });
+    }
+}
+
+updateTodayBadge();
+
+
+/* ============================================================
+   FETCH
+============================================================ */
+
+async function fetchWithTimeout(url,options={},timeout=15000){
+
+    const controller=new AbortController();
+
+    const timer=setTimeout(
+        ()=>controller.abort(),
+        timeout
+    );
+
+    try{
+
+        const response=await fetch(url,{
+            ...options,
+            signal:controller.signal
+        });
+
+        if(!response.ok){
+            throw new Error("HTTP "+response.status);
+        }
+
+        return await response.text();
+
+    }finally{
+        clearTimeout(timer);
+    }
+}
+
+async function fetchRSS(url){
+
+    const attempts=[
+        {
+            name:"Direct",
+            url:url
+        },
+        {
+            name:"AllOrigins",
+            url:"https://api.allorigins.win/get?url="+
+                encodeURIComponent(url)
+        },
+        {
+            name:"CorsProxy",
+            url:"https://corsproxy.io/?"+
+                encodeURIComponent(url)
+        },
+        {
+            name:"CodeTabs",
+            url:"https://api.codetabs.com/v1/proxy?quest="+
+                encodeURIComponent(url)
+        },
+        {
+            name:"RSS2JSON",
+            url:"https://api.rss2json.com/v1/api.json?rss_url="+
+                encodeURIComponent(url)
+        }
+    ];
+
+    let lastError=null;
+
+    for(const attempt of attempts){
+
+        try{
+
+            const text=await fetchWithTimeout(
+                attempt.url,{},15000
+            );
+
+            let finalText=text;
+
+            try{
+
+                const parsed=JSON.parse(text);
+
+                if(parsed && parsed.contents){
+                    finalText=parsed.contents;
+                }
+
+                if(parsed && Array.isArray(parsed.items)){
+                    return {
+                        method:attempt.name,
+                        rss2json:parsed
+                    };
+                }
+
+            }catch(e){}
+
+            if(
+                finalText &&
+                (
+                    finalText.includes("<rss") ||
+                    finalText.includes("<feed") ||
+                    finalText.includes("<item")
+                )
+            ){
+                return {
+                    method:attempt.name,
+                    text:finalText
+                };
+            }
+
+        }catch(err){
+            lastError=err;
+        }
+    }
+
+    throw lastError||new Error("RSS fetch failed");
+}
+
+
+/* ============================================================
+   GOOGLE NEWS
+============================================================ */
+
+function googleNewsURL(query){
+    return "https://news.google.com/rss/search?"+
+        "q="+encodeURIComponent(query)+
+        "&hl=hi&gl=IN&ceid=IN:hi";
+}
+
+function parseRSSResult(result){
+
+    if(result.rss2json){
+
+        return result.rss2json.items.map(item=>({
+            title:cleanText(item.title),
+            link:item.link||"",
+            description:cleanText(item.description),
+            pubDate:item.pubDate||"",
+            source:item.author||"Google News"
+        }));
+
+    }
+
+    const parser=new DOMParser();
+
+    const xml=parser.parseFromString(
+        result.text,
+        "text/xml"
+    );
+
+    return [...xml.querySelectorAll("item")].map(item=>{
+
+        const sourceNode=item.querySelector("source");
+
+        return {
+            title:cleanText(
+                item.querySelector("title")?.textContent||""
+            ),
+            link:cleanText(
+                item.querySelector("link")?.textContent||""
+            ),
+            description:cleanText(
+                item.querySelector("description")?.textContent||""
+            ),
+            pubDate:
+                item.querySelector("pubDate")?.textContent||"",
+            source:
+                cleanText(
+                    sourceNode?.textContent||"Google News"
+                )
+        };
+    });
+}
+
+function sourceName(source,link=""){
+
+    const s=(source+" "+link).toLowerCase();
+
+    if(s.includes("amarujala")||s.includes("amar ujala"))
+        return "Amar Ujala";
+
+    if(s.includes("jagran"))
+        return "Dainik Jagran";
+
+    if(s.includes("bhaskar"))
+        return "Dainik Bhaskar";
+
+    if(s.includes("google"))
+        return "Google News";
+
+    return source||"Google News";
+}
+
+function deduplicateNews(items){
+
+    const map=new Map();
+
+    for(const item of items){
+
+        const key=
+            normalizeKey(item.link) ||
+            normalizeKey(item.title);
+
+        if(!key) continue;
+
+        const old=map.get(key);
+
+        if(!old){
+            map.set(key,item);
+        }else{
+
+            const oldDate=new Date(old.pubDate).getTime()||0;
+            const newDate=new Date(item.pubDate).getTime()||0;
+
+            if(newDate>oldDate){
+                map.set(key,item);
+            }
+        }
+    }
+
+    return [...map.values()];
+}
+
+function sortLatest(items){
+
+    return items.sort((a,b)=>{
+        const da=new Date(a.pubDate).getTime()||0;
+        const db=new Date(b.pubDate).getTime()||0;
+        return db-da;
+    });
+}
+
+
+/* ============================================================
+   SEARCH
+============================================================ */
+
+async function scanInternet(){
+
+    const keyword=document.getElementById("searchKeyword")
+        .value.trim();
+
+    if(!keyword){
+        alert("कृपया search keyword डालें।");
+        return;
+    }
+
+    setSearchStatus(
+        "⏳ Google News पर हिंदी में ताज़ा खबरें खोजी जा रही हैं..."
+    );
+
+    const query=
+        `${keyword} सड़क हादसा दुर्घटना एक्सीडेंट${googleDateQuery()}`;
+
+    try{
+
+        const result=await fetchRSS(
+            googleNewsURL(query)
+        );
+
+        let items=parseRSSResult(result)
+            .filter(isInsideDateRange);
+
+        items=deduplicateNews(items);
+        items=sortLatest(items);
+
+        if(
+            items.length===0 &&
+            document.getElementById("dateRange").value!=="all"
+        ){
+
+            setSearchStatus(
+                "आज की exact range में result नहीं मिला — पिछले 7 दिनों की खबरें खोजी जा रही हैं..."
+            );
+
+            const fallback=
+                `${keyword} सड़क हादसा दुर्घटना after:${todayMinusDays(7)} before:${tomorrowDate()}`;
+
+            const result2=await fetchRSS(
+                googleNewsURL(fallback)
+            );
+
+            items=deduplicateNews(
+                parseRSSResult(result2)
+            );
+
+            items=sortLatest(items);
+        }
+
+        currentNewsResults=items;
+
+        renderNewsResults(items);
+
+        setSearchStatus(
+            `✅ ${items.length} खबरें मिलीं • ${result.method} • नवीनतम पहले`
+        );
+
+    }catch(error){
+
+        console.error(error);
+
+        setSearchStatus(
+            "❌ Google News search failed: "+error.message
+        );
+
+        renderNewsResults([]);
+    }
+}
+
+
+async function searchSource(type){
+
+    const keyword=document.getElementById("searchKeyword")
+        .value.trim();
+
+    if(!keyword){
+        alert("कृपया keyword डालें।");
+        return;
+    }
+
+    const configs={
+        amar:{
+            name:"Amar Ujala",
+            domain:"amarujala",
+            query:`site:amarujala.com ${keyword} सड़क हादसा दुर्घटना`
+        },
+        jagran:{
+            name:"Dainik Jagran",
+            domain:"jagran",
+            query:`site:jagran.com ${keyword} सड़क हादसा दुर्घटना`
+        },
+        bhaskar:{
+            name:"Dainik Bhaskar",
+            domain:"bhaskar",
+            query:`site:bhaskar.com ${keyword} सड़क हादसा दुर्घटना`
+        }
+    };
+
+    const config=configs[type];
+
+    setSearchStatus(
+        `⏳ ${config.name} की खबरें खोजी जा रही हैं...`
+    );
+
+    try{
+
+        const result=await fetchRSS(
+            googleNewsURL(
+                config.query+googleDateQuery()
+            )
+        );
+
+        let items=parseRSSResult(result);
+
+        items=items.filter(item=>{
+
+            const blob=(
+                item.title+" "+
+                item.description+" "+
+                item.link+" "+
+                item.source
+            ).toLowerCase();
+
+            return blob.includes(config.domain);
+        });
+
+        items=items.filter(isInsideDateRange);
+        items=deduplicateNews(items);
+        items=sortLatest(items);
+
+        currentNewsResults=items;
+        renderNewsResults(items);
+
+        setSearchStatus(
+            `✅ ${config.name}: ${items.length} खबरें`
+        );
+
+    }catch(error){
+
+        setSearchStatus(
+            `❌ ${config.name} search failed: ${error.message}`
+        );
+    }
+}
+
+
+async function searchAllSources(){
+
+    const keyword=document.getElementById("searchKeyword")
+        .value.trim();
+
+    if(!keyword){
+        alert("कृपया keyword डालें।");
+        return;
+    }
+
+    setSearchStatus(
+        "⚡ Google News + Amar Ujala + Dainik Jagran + Dainik Bhaskar खोजे जा रहे हैं..."
+    );
+
+    const suffix=googleDateQuery();
+
+    const queries=[
+        `${keyword} सड़क हादसा दुर्घटना${suffix}`,
+        `site:amarujala.com ${keyword} सड़क हादसा दुर्घटना${suffix}`,
+        `site:jagran.com ${keyword} सड़क हादसा दुर्घटना${suffix}`,
+        `site:bhaskar.com ${keyword} सड़क हादसा दुर्घटना${suffix}`
+    ];
+
+    const results=await Promise.allSettled(
+        queries.map(q=>fetchRSS(googleNewsURL(q)))
+    );
+
+    let all=[];
+
+    results.forEach(result=>{
+        if(result.status==="fulfilled"){
+            all=all.concat(
+                parseRSSResult(result.value)
+            );
+        }
+    });
+
+    all=all.filter(isInsideDateRange);
+    all=deduplicateNews(all);
+    all=sortLatest(all);
+
+    currentNewsResults=all;
+    renderNewsResults(all);
+
+    setSearchStatus(
+        `⚡ Combined Search: ${all.length} unique खबरें`
+    );
+}
+
+
+/* ============================================================
+   NEWS RENDER
+============================================================ */
+
+function setSearchStatus(text){
+    document.getElementById("searchStatus").innerHTML=text;
+}
+
+function renderNewsResults(items){
+
+    const container=document.getElementById("newsResults");
+    container.innerHTML="";
+
+    if(!items.length){
+
+        container.innerHTML=`
+            <div class="border rounded-xl p-5 text-center muted">
+                कोई खबर नहीं मिली।
+            </div>
+        `;
+
+        return;
+    }
+
+    items.forEach((item,index)=>{
+
+        const source=sourceName(item.source,item.link);
+        const date=item.pubDate
+            ? formatDate(item.pubDate)
+            : "तारीख उपलब्ध नहीं";
+
+        const card=document.createElement("div");
+
+        card.className=
+            "news-card border rounded-xl p-4 bg-white dark:bg-slate-900";
+
+        card.innerHTML=`
+
+            <div class="flex flex-wrap justify-between gap-2">
+
+                <div class="flex gap-2 flex-wrap">
+                    <span class="source-badge">
+                        ${escapeHTML(source)}
+                    </span>
+
+                    ${
+                        isToday(item.pubDate)
+                        ? `<span class="latest-badge">आज</span>`
+                        : ""
+                    }
+                </div>
+
+                <span class="text-xs muted">
+                    ${escapeHTML(date)}
+                </span>
+            </div>
+
+            <h3 class="font-bold mt-2 text-base">
+                ${escapeHTML(item.title)}
+            </h3>
+
+            ${
+                item.description
+                ? `<p class="text-sm muted mt-2">
+                    ${escapeHTML(item.description).slice(0,500)}
+                  </p>`
+                : ""
+            }
+
+            <div class="flex flex-wrap gap-2 mt-4">
+
+                <button onclick="useArticle(${index})"
+                 class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm font-semibold">
+                    📄 Use Article
+                </button>
+
+                <button onclick="extractFromResult(${index})"
+                 class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-lg text-sm font-semibold">
+                    🧠 Extract
+                </button>
+
+                <button onclick="saveNewsReportFromResult(${index})"
+                 class="bg-indigo-700 hover:bg-indigo-800 text-white px-3 py-2 rounded-lg text-sm font-semibold">
+                    🧠 Case Report
+                </button>
+
+                <a href="${escapeAttribute(item.link)}"
+                   target="_blank"
+                   rel="noopener"
+                   class="bg-slate-700 hover:bg-slate-800 text-white px-3 py-2 rounded-lg text-sm font-semibold">
+                    🔗 Open Source
+                </a>
+
+            </div>
+        `;
+
+        container.appendChild(card);
+    });
+}
+
+
+/* ============================================================
+   ARTICLE
+============================================================ */
+
+async function fetchArticleText(url){
+
+    if(!url) throw new Error("Article URL missing");
+
+    const attempts=[
+        {
+            name:"Jina Reader",
+            url:"https://r.jina.ai/"+url
+        },
+        {
+            name:"AllOrigins",
+            url:"https://api.allorigins.win/get?url="+
+                encodeURIComponent(url)
+        },
+        {
+            name:"CorsProxy",
+            url:"https://corsproxy.io/?"+
+                encodeURIComponent(url)
+        }
+    ];
+
+    let lastError=null;
+
+    for(const attempt of attempts){
+
+        try{
+
+            const text=await fetchWithTimeout(
+                attempt.url,{},18000
+            );
+
+            let articleText=text;
+
+            try{
+
+                const json=JSON.parse(text);
+
+                if(json.contents){
+                    articleText=json.contents;
+                }
+
+            }catch(e){}
+
+            articleText=cleanArticleText(articleText);
+
+            if(articleText && articleText.length>300){
+
+                return {
+                    text:articleText,
+                    method:attempt.name
+                };
+            }
+
+        }catch(err){
+            lastError=err;
+        }
+    }
+
+    throw lastError||new Error("Article extraction failed");
+}
+
+function cleanArticleText(text){
+
+    let t=String(text||"");
+
+    t=t.replace(/<script[\s\S]*?<\/script>/gi," ");
+    t=t.replace(/<style[\s\S]*?<\/style>/gi," ");
+
+    return cleanText(t)
+        .replace(/\s{2,}/g," ")
+        .trim();
+}
+
+async function useArticle(index){
+
+    const item=currentNewsResults[index];
+
+    if(!item) return;
+
+    document.getElementById("newsSource").value=
+        sourceName(item.source,item.link);
+
+    document.getElementById("newsLink").value=
+        item.link||"";
+
+    if(item.pubDate){
+
+        const d=new Date(item.pubDate);
+
+        if(!isNaN(d)){
+            document.getElementById("accidentDate").value=
+                localDateInput(d);
+        }
+    }
+
+    document.getElementById("newsText").value=
+        item.title+"\n\n"+item.description;
+
+    setSearchStatus("⏳ पूरा article text निकाला जा रहा है...");
+
+    try{
+
+        const article=await fetchArticleText(item.link);
+
+        document.getElementById("newsText").value=
+            article.text;
+
+        setSearchStatus(
+            "✅ Article loaded via "+article.method
+        );
+
+    }catch(error){
+
+        setSearchStatus(
+            "⚠️ Full article नहीं मिला। RSS text से extraction किया जा रहा है।"
+        );
+    }
+
+    autoExtract();
+}
+
+async function extractFromResult(index){
+    await useArticle(index);
+    extractAllPersons();
+}
+
+
+/* ============================================================
+   SENTENCE / ENTITY EXTRACTION
+============================================================ */
+
+function splitHindiSentences(text){
+
+    return String(text||"")
+        .replace(/\r/g," ")
+        .split(/(?<=[।!?])\s+|(?<=[.!?])\s+|\n+/)
+        .map(s=>s.trim())
+        .filter(s=>s.length>15);
+}
+
+function extractNameFromSentence(sentence){
+
+    const s=normalizeHindiDigits(sentence);
+
+    const patterns=[
+
+        /(?:मृतक|मृत|घायल|जख्मी|युवक|युवती|व्यक्ति|चालक|सवार)\s+([A-Zअ-ह][A-Za-zअ-ह़-य़्‌'’-]{1,}(?:\s+[A-Zअ-ह][A-Za-zअ-ह़-य़्‌'’-]{1,}){0,3})/i,
+
+        /(?:नाम|पहचान)\s*(?:के रूप में)?\s*([A-Zअ-ह][A-Za-zअ-ह़-य़्‌'’-]+(?:\s+[A-Zअ-ह][A-Za-zअ-ह़-य़्‌'’-]+){0,3})/i,
+
+        /([A-Z][A-Za-z]+(?:\s+[A-Z][A-Za-z]+){1,3})\s+(?:की मौत|की मृत्यु|घायल|जख्मी)/i,
+
+        /([A-Zअ-ह][A-Za-zअ-ह़-य़्‌'’-]+(?:\s+[A-Zअ-ह][A-Za-zअ-ह़-य़्‌'’-]+){0,3})\s+(?:पुत्र|पुत्री|निवासी)/i,
+
+        /([A-Z][A-Za-z]+(?:\s+[A-Z][A-Za-z]+){1,3})\s+(?:s\/o|d\/o|son of|daughter of)/i
+    ];
+
+    for(const regex of patterns){
+
+        const m=s.match(regex);
+
+        if(m && m[1]){
+
+            const name=m[1]
+                .replace(/[,:;।]+$/,"")
+                .trim();
+
+            if(
+                name.length>2 &&
+                !/^(हादसे|सड़क|मौके|घटना|पुलिस|जिले|इसके|एक|दो|तीन)$/i
+                    .test(name)
+            ){
+                return name;
+            }
+        }
+    }
+
+    return "";
+}
+
+function extractFather(sentence){
+
+    const s=normalizeHindiDigits(sentence);
+
+    const patterns=[
+
+        /(?:पिता का नाम|पिता)\s*[:\-]?\s*([A-Zअ-ह][A-Za-zअ-ह़-य़्‌'’-]+(?:\s+[A-Zअ-ह][A-Za-zअ-ह़-य़्‌'’-]+){0,3})/i,
+
+        /(?:s\/o|son of)\s+([A-Z][A-Za-z]+(?:\s+[A-Z][A-Za-z]+){0,3})/i,
+
+        /(?:d\/o|daughter of)\s+([A-Z][A-Za-z]+(?:\s+[A-Z][A-Za-z]+){0,3})/i,
+
+        /([A-Zअ-ह][A-Za-zअ-ह़-य़्‌'’-]+(?:\s+[A-Zअ-ह][A-Za-zअ-ह़-य़्‌'’-]+){0,3})\s*(?:के|की)?\s*पुत्र\s+([A-Zअ-ह][A-Za-zअ-ह़-य़्‌'’-]+(?:\s+[A-Zअ-ह][A-Za-zअ-ह़-य़्‌'’-]+){0,3})/i,
+
+        /([A-Zअ-ह][A-Za-zअ-ह़-य़्‌'’-]+(?:\s+[A-Zअ-ह][A-Za-zअ-ह़-य़्‌'’-]+){0,3})\s*(?:के|की)?\s*पुत्री\s+([A-Zअ-ह][A-Za-zअ-ह़-य़्‌'’-]+(?:\s+[A-Zअ-ह][A-Za-zअ-ह़-य़्‌'’-]+){0,3})/i
+    ];
+
+    for(const regex of patterns){
+
+        const m=s.match(regex);
+
+        if(m){
+
+            const candidate=
+                m.length>2 && m[2]
+                ? m[2]
+                : m[1];
+
+            if(candidate){
+                return candidate
+                    .replace(/[,:;।]+$/,"")
+                    .trim();
+            }
+        }
+    }
+
+    return "";
+}
+
+function extractAge(sentence){
+
+    const s=normalizeHindiDigits(sentence);
+
+    const m=
+        s.match(
+            /(?:उम्र|आयु|aged|age)\s*(?:करीब|लगभग)?\s*(\d{1,3})\s*(?:वर्ष|साल|year|years)?/i
+        ) ||
+        s.match(
+            /(\d{1,3})\s*(?:वर्षीय|साल का|साल की)/i
+        );
+
+    return m?m[1]:"";
+}
+
+function extractAddress(sentence){
+
+    const s=normalizeHindiDigits(sentence);
+
+    const patterns=[
+
+        /(?:निवासी|रहने वाले|रहने वाला|रहती थी|निवास)\s*(?:[:\-])?\s*([^।,;]+)/i,
+
+        /(?:ग्राम|गांव|मोहल्ला|कस्बा)\s*[:\-]?\s*([^।,;]+)/i
+    ];
+
+    for(const regex of patterns){
+
+        const m=s.match(regex);
+
+        if(m && m[1]){
+            return m[1].trim();
+        }
+    }
+
+    return "";
+}
+
+function extractPoliceStation(sentence){
+
+    const m=normalizeHindiDigits(sentence).match(
+        /(?:थाना|कोतवाली)\s*[:\-]?\s*([A-Zअ-ह][^।,;]+)/i
+    );
+
+    return m?m[1].trim():"";
+}
+
+function extractPlace(text){
+
+    const patterns=[
+
+        /(?:स्थान|जगह|मौके|घटना स्थल)\s*[:\-]?\s*([^।\n]+)/i,
+
+        /(?:के पास|नजदीक|निकट)\s+([A-Zअ-ह][A-Za-zअ-ह़-य़्‌'’\-\s]{2,50})/i,
+
+        /(?:at|near|in)\s+([A-Z][A-Za-z\s\-]{2,50})/i
+    ];
+
+    for(const regex of patterns){
+
+        const m=String(text||"").match(regex);
+
+        if(m && m[1]){
+            return m[1]
+                .split(/(?:।|,|;)/)[0]
+                .trim();
+        }
+    }
+
+    return "";
+}
+
+function extractVehicle(text){
+
+    const patterns=[
+
+        ["बाइक","बाइक|मोटरसाइकिल|motorcycle|bike"],
+        ["स्कूटी","स्कूटी|scooty|scooter"],
+        ["कार","कार|car|sedan|hatchback"],
+        ["ट्रक","ट्रक|truck"],
+        ["बस","बस|bus"],
+        ["ट्रैक्टर","ट्रैक्टर|tractor"],
+        ["टेंपो","टेंपो|tempo"],
+        ["ऑटो","ऑटो|auto|e-rickshaw|ई-रिक्शा"],
+        ["पिकअप","पिकअप|pickup"],
+        ["टैंकर","टैंकर|tanker"],
+        ["डंपर","डंपर|dumper"],
+        ["डीसीएम","डीसीएम|DCM"],
+        ["बोलेरो","बोलेरो|Bolero"],
+        ["मैजिक","मैजिक|Magic"]
+    ];
+
+    for(const [name,pattern] of patterns){
+
+        if(new RegExp(pattern,"i").test(text||"")){
+            return name;
+        }
+    }
+
+    return "";
+}
+
+function extractCause(text){
+
+    const rules=[
+
+        ["तेज रफ्तार",/तेज रफ्तार|तेज गति|रफ्तार तेज|overspeed|speeding/i],
+
+        ["टक्कर / भिड़ंत",/टक्कर|भिड़ंत|टकरा|collision|crash|hit/i],
+
+        ["गलत दिशा",/गलत दिशा|wrong side|wrong way/i],
+
+        ["शराब / नशा",/शराब|नशे|नशे में|drunk|alcohol/i],
+
+        ["लापरवाही",/लापरवाही|negligence|negligent/i],
+
+        ["ब्रेक फेल",/ब्रेक फेल|ब्रेक खराब|brake failure/i],
+
+        ["गड्ढा",/गड्ढा|गड्ढे|pothole/i],
+
+        ["पलटना",/पलट|पलटने|overturn|overturned/i],
+
+        ["हिट एंड रन",/हिट एंड रन|hit and run/i],
+
+        ["पशु आने से",/पशु|जानवर|animal|cattle/i]
+    ];
+
+    for(const [name,regex] of rules){
+
+        if(regex.test(text||"")){
+            return name;
+        }
+    }
+
+    return "";
+}
+
+function extractStatus(text){
+
+    const s=normalizeHindiDigits(text);
+
+    if(
+        /मौत|मृत|मृतक|दम तोड़|शव|killed|dead|death|died/i.test(s)
+    ){
+        return "Fatal";
+    }
+
+    if(
+        /घायल|जख्मी|अस्पताल|injured|hospital/i.test(s)
+    ){
+        return "Injured";
+    }
+
+    return "Under Investigation";
+}
+
+function extractCount(text,type){
+
+    const s=normalizeHindiDigits(text);
+
+    const patterns=
+        type==="death"
+        ?
+        [
+            /(\d+)\s*(?:लोगों|लोग|व्यक्तियों|व्यक्ति|की)?\s*(?:की)?\s*(?:मौत|मृत्यु|मृतक|killed|dead)/i,
+            /(?:मौत|मृत्यु|मृतक|killed|dead)\s*(?:हुई|हुए|की)?\s*(\d+)/i
+        ]
+        :
+        [
+            /(\d+)\s*(?:लोगों|लोग|व्यक्तियों|व्यक्ति)?\s*(?:के)?\s*घायल/i,
+            /घायल\s*(?:हुए|हुई)?\s*(\d+)/i
+        ];
+
+    for(const regex of patterns){
+
+        const m=s.match(regex);
+
+        if(m){
+            return parseInt(m[1],10);
+        }
+    }
+
+    return 0;
+}
+
+function extractTime(text){
+
+    const s=normalizeHindiDigits(text);
+
+    const m=s.match(
+        /(\d{1,2}:\d{2})\s*(बजे)?\s*(सुबह|दोपहर|शाम|रात)?/i
+    );
+
+    if(m) return m[0].trim();
+
+    for(const word of ["सुबह","दोपहर","शाम","रात"]){
+        if(s.includes(word)) return word;
+    }
+
+    return "";
+}
+
+function sentencePersonStatus(sentence){
+
+    if(
+        /मौत|मृत|मृतक|दम तोड़|शव|killed|dead|died/i
+            .test(sentence)
+    ){
+        return "Fatal";
+    }
+
+    if(
+        /घायल|जख्मी|अस्पताल|injured/i.test(sentence)
+    ){
+        return "Injured";
+    }
+
+    return "";
+}
+
+
+/* ============================================================
+   EXTRACTION
+============================================================ */
+
+function calculateConfidence(p){
+
+    let score=0;
+
+    if(p.name) score+=25;
+    if(p.father) score+=15;
+    if(p.age) score+=10;
+    if(p.address) score+=10;
+    if(p.station) score+=10;
+    if(p.vehicle) score+=10;
+    if(p.cause) score+=5;
+    if(p.place) score+=10;
+    if(p.status) score+=5;
+
+    return Math.min(score,100);
+}
+
+function extractPersonsFromArticle(text){
+
+    const sentences=splitHindiSentences(text);
+    const persons=[];
+
+    sentences.forEach((sentence,index)=>{
+
+        const status=sentencePersonStatus(sentence);
+
+        if(!status) return;
+
+        const name=extractNameFromSentence(sentence);
+
+        if(!name) return;
+
+        const father=extractFather(sentence);
+        const age=extractAge(sentence);
+        const address=extractAddress(sentence);
+        const station=extractPoliceStation(sentence);
+
+        const vehicle=
+            extractVehicle(sentence) ||
+            extractVehicle(sentences[index-1]||"") ||
+            extractVehicle(sentences[index+1]||"");
+
+        const cause=
+            extractCause(sentence) ||
+            extractCause(sentences[index-1]||"") ||
+            extractCause(sentences[index+1]||"");
+
+        const place=
+            extractPlace(sentence) ||
+            extractPlace(sentences[index-1]||"");
+
+        const time=extractTime(sentence);
+
+        persons.push({
+
+            personName:name,
+            fatherName:father,
+            personAge:age,
+            personAddress:address,
+            policeStation:station,
+
+            vehicleType:vehicle,
+            cause:cause,
+            place:place,
+
+            accidentDate:
+                document.getElementById("accidentDate").value ||
+                localDateInput(),
+
+            accidentTime:time,
+
+            status:status,
+
+            deathCount:status==="Fatal"?1:0,
+            injuredCount:status==="Injured"?1:0,
+
+            newsSource:
+                document.getElementById("newsSource").value,
+
+            newsLink:
+                document.getElementById("newsLink").value,
+
+            evidenceSentence:sentence,
+
+            confidence:calculateConfidence({
+                name,
+                father,
+                age,
+                address,
+                station,
+                vehicle,
+                cause,
+                place,
+                status
+            })
+        });
+    });
+
+    return mergePersons(persons);
+}
+
+function mergePersons(list){
+
+    const map=new Map();
+
+    for(const person of list){
+
+        const key=
+            normalizeKey(
+                person.personName+
+                "|"+
+                person.fatherName
+            );
+
+        if(!key) continue;
+
+        if(!map.has(key)){
+
+            map.set(key,person);
+
+        }else{
+
+            const old=map.get(key);
+
+            [
+                "fatherName",
+                "personAge",
+                "personAddress",
+                "policeStation",
+                "vehicleType",
+                "cause",
+                "place",
+                "accidentTime",
+                "evidenceSentence"
+            ].forEach(field=>{
+
+                if(!old[field] && person[field]){
+                    old[field]=person[field];
+                }
+            });
+
+            old.confidence=Math.max(
+                old.confidence||0,
+                person.confidence||0
+            );
+        }
+    }
+
+    return [...map.values()];
+}
+
+function autoExtract(){
+
+    const text=document.getElementById("newsText").value.trim();
+
+    if(!text){
+        alert("पहले article/news text डालें।");
+        return;
+    }
+
+    const vehicle=extractVehicle(text);
+    const cause=extractCause(text);
+    const place=extractPlace(text);
+    const status=extractStatus(text);
+    const deaths=extractCount(text,"death");
+    const injured=extractCount(text,"injured");
+
+    document.getElementById("vehicleType").value=vehicle;
+    document.getElementById("cause").value=cause;
+    document.getElementById("place").value=place;
+    document.getElementById("status").value=status;
+    document.getElementById("deathCount").value=deaths;
+    document.getElementById("injuredCount").value=injured;
+    document.getElementById("accidentTime").value=
+        extractTime(text);
+
+    const persons=extractPersonsFromArticle(text);
+
+    if(persons.length){
+
+        const first=persons[0];
+
+        document.getElementById("personName").value=
+            first.personName||"";
+
+        document.getElementById("fatherName").value=
+            first.fatherName||"";
+
+        document.getElementById("personAge").value=
+            first.personAge||"";
+
+        document.getElementById("personAddress").value=
+            first.personAddress||"";
+
+        document.getElementById("policeStation").value=
+            first.policeStation||"";
+    }
+
+    document.getElementById("extractionConfidence").textContent=
+        persons.length
+        ? `Extraction: ${persons[0].confidence}%`
+        : "Extraction: basic";
+
+    extractedPersons=persons;
+
+    renderMultiPersonPreview();
+}
+
+function extractAllPersons(){
+
+    const text=document.getElementById("newsText").value.trim();
+
+    if(!text){
+        alert("पहले article/news text डालें।");
+        return;
+    }
+
+    extractedPersons=extractPersonsFromArticle(text);
+
+    renderMultiPersonPreview();
+
+    if(extractedPersons.length){
+
+        document.getElementById("personFoundBadge").textContent=
+            extractedPersons.length+" व्यक्ति";
+
+        checkDuplicates();
+
+    }else{
+
+        document.getElementById("personFoundBadge").textContent=
+            "0 नामित व्यक्ति";
+
+        document.getElementById("duplicateBadge").textContent=
+            "0 Duplicate";
+    }
+}
+
+
+/* ============================================================
+   STRONG PERSON DUPLICATE ENGINE
+============================================================ */
+
+function tokenSimilarity(a,b){
+
+    const A=new Set(normalizeKey(a).split(" ").filter(Boolean));
+    const B=new Set(normalizeKey(b).split(" ").filter(Boolean));
+
+    if(!A.size||!B.size) return 0;
+
+    let common=0;
+
+    A.forEach(x=>{
+        if(B.has(x)) common++;
+    });
+
+    return common/Math.max(A.size,B.size);
+}
+
+function dateNear(a,b){
+
+    if(!a||!b) return false;
+
+    const da=new Date(a);
+    const db=new Date(b);
+
+    if(isNaN(da)||isNaN(db)) return false;
+
+    return Math.abs(da-db)<=86400000;
+}
+
+function personDuplicateScore(person,record){
+
+    if(record.mergedInto) return 0;
+
+    let score=0;
+
+    const nameSim=tokenSimilarity(
+        person.personName,
+        record.personName
+    );
+
+    if(nameSim===1) score+=55;
+    else if(nameSim>=.7) score+=40;
+    else if(nameSim>=.5) score+=25;
+
+    const fatherSim=tokenSimilarity(
+        person.fatherName,
+        record.fatherName
+    );
+
+    if(fatherSim===1 && fatherSim>0) score+=18;
+    else if(fatherSim>=.5) score+=10;
+
+    const placeSim=tokenSimilarity(
+        person.place,
+        record.place
+    );
+
+    if(placeSim===1 && placeSim>0) score+=12;
+    else if(placeSim>=.5) score+=7;
+
+    if(
+        person.accidentDate &&
+        record.accidentDate &&
+        person.accidentDate===record.accidentDate
+    ){
+        score+=10;
+    }else if(
+        dateNear(person.accidentDate,record.accidentDate)
+    ){
+        score+=5;
+    }
+
+    if(
+        normalizeKey(person.policeStation) &&
+        normalizeKey(person.policeStation)===
+        normalizeKey(record.policeStation)
+    ){
+        score+=3;
+    }
+
+    if(
+        normalizeKey(person.vehicleType) &&
+        normalizeKey(person.vehicleType)===
+        normalizeKey(record.vehicleType)
+    ){
+        score+=2;
+    }
+
+    return Math.min(score,100);
+}
+
+function getPersonDuplicateCandidates(person,excludeId=null){
+
+    return records
+        .filter(r=>!excludeId||r.id!==excludeId)
+        .map(record=>({
+            record,
+            score:personDuplicateScore(person,record)
+        }))
+        .filter(x=>x.score>=45)
+        .sort((a,b)=>b.score-a.score);
+}
+
+
+/* ============================================================
+   CASE INTELLIGENCE ENGINE
+============================================================ */
+
+function buildCaseFingerprint(record){
+
+    return [
+        record.accidentDate,
+        normalizeKey(record.place),
+        normalizeKey(record.policeStation),
+        normalizeKey(record.vehicleType),
+        normalizeKey(record.cause)
+    ].join("|");
+}
+
+function caseSimilarity(a,b){
+
+    let score=0;
+
+    if(
+        a.accidentDate &&
+        b.accidentDate &&
+        a.accidentDate===b.accidentDate
+    ){
+        score+=30;
+    }else if(dateNear(a.accidentDate,b.accidentDate)){
+        score+=18;
+    }
+
+    const place=tokenSimilarity(a.place,b.place);
+
+    if(place===1 && place>0) score+=25;
+    else if(place>=.6) score+=18;
+    else if(place>=.35) score+=10;
+
+    const station=tokenSimilarity(
+        a.policeStation,b.policeStation
+    );
+
+    if(station===1&&station>0) score+=8;
+    else if(station>=.5) score+=5;
+
+    const vehicle=tokenSimilarity(
+        a.vehicleType,b.vehicleType
+    );
+
+    if(vehicle===1&&vehicle>0) score+=8;
+    else if(vehicle>=.5) score+=4;
+
+    const cause=tokenSimilarity(
+        a.cause,b.cause
+    );
+
+    if(cause===1&&cause>0) score+=5;
+
+    const time=tokenSimilarity(
+        a.accidentTime,b.accidentTime
+    );
+
+    if(time===1&&time>0) score+=4;
+
+    const personName=tokenSimilarity(
+        a.personName,b.personName
+    );
+
+    if(personName===1&&personName>0) score+=20;
+    else if(personName>=.5) score+=10;
+
+    return Math.min(score,100);
+}
+
+function findMatchingCase(record){
+
+    return cases
+        .map(c=>{
+
+            const representatives=
+                records.filter(r=>
+                    r.caseId===c.id &&
+                    !r.mergedInto
+                );
+
+            let best=0;
+
+            representatives.forEach(r=>{
+                best=Math.max(
+                    best,
+                    caseSimilarity(record,r)
+                );
+            });
+
+            if(!representatives.length){
+
+                best=caseSimilarity(
+                    record,
+                    c.representative||{}
+                );
+            }
+
+            return {
+                case:c,
+                score:best
+            };
+        })
+        .filter(x=>x.score>=60)
+        .sort((a,b)=>b.score-a.score)[0]||null;
+}
+
+function createCaseFromRecord(record){
+
+    const c={
+        id:makeId("case"),
+        caseKey:buildCaseFingerprint(record),
+        title:
+            record.place
+            ? "Accident — "+record.place
+            : "Accident Case",
+        accidentDate:record.accidentDate||"",
+        place:record.place||"",
+        policeStation:record.policeStation||"",
+        representative:{...record},
+        createdAt:new Date().toISOString(),
+        updatedAt:new Date().toISOString(),
+        reportIds:[],
+        sourceNames:[]
+    };
+
+    cases.push(c);
+    persistCases();
+
+    return c;
+}
+
+function getOrCreateCase(record){
+
+    const match=findMatchingCase(record);
+
+    if(match && match.score>=60){
+
+        match.case.updatedAt=
+            new Date().toISOString();
+
+        return match.case;
+    }
+
+    return createCaseFromRecord(record);
+}
+
+function linkRecordToCase(record){
+
+    const c=getOrCreateCase(record);
+
+    record.caseId=c.id;
+
+    if(!c.accidentDate && record.accidentDate)
+        c.accidentDate=record.accidentDate;
+
+    if(!c.place && record.place)
+        c.place=record.place;
+
+    if(!c.policeStation && record.policeStation)
+        c.policeStation=record.policeStation;
+
+    c.updatedAt=new Date().toISOString();
+
+    persistCases();
+
+    return c;
+}
+
+
+/* ============================================================
+   NEWS REPORT LAYER
+============================================================ */
+
+function newsReportKey(item){
+
+    return normalizeKey(item.link) ||
+        normalizeKey(item.title);
+}
+
+function saveNewsReport(item,caseId){
+
+    if(!item) return null;
+
+    const key=newsReportKey(item);
+
+    const existing=newsReports.find(r=>
+        newsReportKey(r)===key
+    );
+
+    if(existing){
+
+        if(caseId && !existing.caseId){
+            existing.caseId=caseId;
+        }
+
+        persistNews();
+
+        return existing;
+    }
+
+    const report={
+        id:makeId("news"),
+        caseId:caseId||"",
+        title:item.title||"",
+        source:sourceName(item.source,item.link),
+        link:item.link||"",
+        published:item.pubDate||"",
+        description:item.description||"",
+        createdAt:new Date().toISOString()
+    };
+
+    newsReports.push(report);
+
+    persistNews();
+
+    return report;
+}
+
+function saveNewsReportFromResult(index){
+
+    const item=currentNewsResults[index];
+
+    if(!item) return;
+
+    const temp={
+        personName:"",
+        accidentDate:
+            item.pubDate
+            ? localDateInput(new Date(item.pubDate))
+            : localDateInput(),
+        place:"",
+        policeStation:"",
+        vehicleType:"",
+        cause:"",
+        accidentTime:"",
+        status:"Under Investigation"
+    };
+
+    const c=getOrCreateCase(temp);
+
+    const report=saveNewsReport(item,c.id);
+
+    c.reportIds=c.reportIds||[];
+
+    if(!c.reportIds.includes(report.id)){
+        c.reportIds.push(report.id);
+    }
+
+    c.sourceNames=c.sourceNames||[];
+
+    if(!c.sourceNames.includes(report.source)){
+        c.sourceNames.push(report.source);
+    }
+
+    c.updatedAt=new Date().toISOString();
+
+    persistCases();
+
+    alert("News report Case Intelligence में link हो गई।");
+
+    renderCasesQuick();
+}
+
+
+/* ============================================================
+   PREVIEW
+============================================================ */
+
+function renderMultiPersonPreview(){
+
+    const box=document.getElementById(
+        "multiPersonPreview"
+    );
+
+    box.innerHTML="";
+
+    if(!extractedPersons.length){
+
+        box.innerHTML=`
+            <div class="border rounded-xl p-5 text-center muted">
+                किसी व्यक्ति का नाम automatic रूप से identify नहीं हुआ।
+            </div>
+        `;
+
+        return;
+    }
+
+    extractedPersons.forEach((person,index)=>{
+
+        const candidates=getPersonDuplicateCandidates(person);
+
+        const top=candidates[0];
+
+        const duplicateClass=
+            top && top.score>=70
+            ? "duplicate"
+            : "";
+
+        person.isDuplicate=
+            !!(top&&top.score>=70);
+
+        person.duplicateScore=
+            top?top.score:0;
+
+        const card=document.createElement("div");
+
+        card.className=
+            "person-card border rounded-xl p-4 "+
+            duplicateClass;
+
+        card.innerHTML=`
+
+<div class="flex flex-wrap justify-between gap-2">
+
+<div>
+
+<span class="font-bold">
+${index+1}. ${escapeHTML(person.personName||"नाम नहीं मिला")}
+</span>
+
+<span class="ml-2 text-xs px-2 py-1 rounded-full
+${person.status==="Fatal"
+?"bg-red-100 text-red-700"
+:"bg-orange-100 text-orange-700"}">
+${person.status==="Fatal"?"मृतक":"घायल"}
+</span>
+
+</div>
+
+<span class="confidence">
+Confidence ${person.confidence||0}%
+</span>
+
+</div>
+
+<div class="grid md:grid-cols-2 lg:grid-cols-4 gap-2 mt-3 text-xs">
+
+<div><b>पिता:</b> ${escapeHTML(person.fatherName||"—")}</div>
+<div><b>उम्र:</b> ${escapeHTML(person.personAge||"—")}</div>
+<div><b>वाहन:</b> ${escapeHTML(person.vehicleType||"—")}</div>
+<div><b>कारण:</b> ${escapeHTML(person.cause||"—")}</div>
+<div><b>स्थान:</b> ${escapeHTML(person.place||"—")}</div>
+<div><b>थाना:</b> ${escapeHTML(person.policeStation||"—")}</div>
+<div><b>पता:</b> ${escapeHTML(person.personAddress||"—")}</div>
+<div><b>समय:</b> ${escapeHTML(person.accidentTime||"—")}</div>
+
+</div>
+
+${
+top
+?
+`<div class="mt-3 text-xs font-bold ${
+top.score>=70
+?"text-red-600"
+:"text-amber-700"
+}">
+⚠️ Existing match: ${escapeHTML(top.record.personName)}
+ — Similarity ${top.score}%
+</div>`
+:""
+}
+
+<div class="mt-3 bg-slate-50 dark:bg-slate-800 rounded-lg p-3 text-xs">
+<b>Evidence:</b>
+${escapeHTML(person.evidenceSentence||"—")}
+</div>
+
+<div class="mt-3 flex gap-2">
+
+<button onclick="editExtractedPerson(${index})"
+ class="bg-slate-700 text-white px-3 py-1.5 rounded-lg text-xs">
+✏️ Edit
+</button>
+
+<button onclick="removeExtractedPerson(${index})"
+ class="bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs">
+हटाएँ
+</button>
+
+</div>
+
+`;
+
+        box.appendChild(card);
+    });
+
+    document.getElementById("personFoundBadge").textContent=
+        extractedPersons.length+" व्यक्ति";
+}
+
+function editExtractedPerson(index){
+
+    const p=extractedPersons[index];
+
+    if(!p) return;
+
+    [
+        ["personName",p.personName],
+        ["fatherName",p.fatherName],
+        ["personAge",p.personAge],
+        ["personAddress",p.personAddress],
+        ["policeStation",p.policeStation],
+        ["vehicleType",p.vehicleType],
+        ["cause",p.cause],
+        ["place",p.place],
+        ["accidentDate",p.accidentDate],
+        ["accidentTime",p.accidentTime],
+        ["status",p.status]
+    ].forEach(([id,value])=>{
+        document.getElementById(id).value=value||"";
+    });
+
+    window.scrollTo({
+        top:0,
+        behavior:"smooth"
+    });
+}
+
+function removeExtractedPerson(index){
+
+    extractedPersons.splice(index,1);
+
+    renderMultiPersonPreview();
+    checkDuplicates();
+}
+
+
+/* ============================================================
+   DUPLICATE CHECK
+============================================================ */
+
+function checkDuplicates(){
+
+    let duplicateCount=0;
+
+    extractedPersons=extractedPersons.map(person=>{
+
+        const candidates=
+            getPersonDuplicateCandidates(person);
+
+        person.duplicateCandidates=candidates;
+        person.duplicateScore=
+            candidates[0]?.score||0;
+
+        person.isDuplicate=
+            person.duplicateScore>=70;
+
+        if(person.isDuplicate){
+            duplicateCount++;
+        }
+
+        return person;
+    });
+
+    document.getElementById("duplicateBadge").textContent=
+        duplicateCount+" Duplicate";
+
+    renderMultiPersonPreview();
+
+    return duplicateCount;
+}
+
+
+/* ============================================================
+   SAVE PLAN
+============================================================ */
+
+function saveAllPersons(){
+
+    if(!extractedPersons.length){
+
+        alert("पहले Multi-Person Extract करें।");
+        return;
+    }
+
+    checkDuplicates();
+
+    currentDuplicatePlan=
+        extractedPersons.map(person=>{
+
+            const candidates=
+                getPersonDuplicateCandidates(person);
+
+            const top=candidates[0];
+
+            return {
+                person,
+                action:
+                    top&&top.score>=70
+                    ? "merge"
+                    : "save",
+                candidate:top?.record||null,
+                score:top?.score||0
+            };
+        });
+
+    renderDuplicatePlan();
+
+    document.getElementById("duplicateModal")
+        .classList.add("show");
+}
+
+function renderDuplicatePlan(){
+
+    const box=document.getElementById(
+        "duplicatePlanBody"
+    );
+
+    box.innerHTML="";
+
+    currentDuplicatePlan.forEach((plan,index)=>{
+
+        const p=plan.person;
+
+        const status=
+            plan.score>=70
+            ? `<span class="case-pill strong-duplicate">
+                STRONG DUPLICATE ${plan.score}%
+               </span>`
+            : plan.score>=45
+            ? `<span class="case-pill possible-duplicate">
+                POSSIBLE MATCH ${plan.score}%
+               </span>`
+            : `<span class="case-pill new-record">
+                NEW RECORD
+               </span>`;
+
+        const div=document.createElement("div");
+
+        div.className=
+            "border rounded-xl p-4";
+
+        div.innerHTML=`
+
+<div class="flex flex-wrap justify-between gap-2">
+
+<div>
+<b>${index+1}. ${escapeHTML(p.personName)}</b>
+<div class="text-xs muted mt-1">
+${escapeHTML(p.place||"स्थान नहीं")} •
+${escapeHTML(p.accidentDate||"तारीख नहीं")}
+</div>
+</div>
+
+${status}
+
+</div>
+
+${
+plan.candidate
+?
+`<div class="mt-3 text-sm bg-slate-50 p-3 rounded-lg">
+<b>Matched record:</b>
+${escapeHTML(plan.candidate.personName)}
+<br>
+<span class="text-xs muted">
+${escapeHTML(plan.candidate.place||"—")}
+•
+${escapeHTML(plan.candidate.accidentDate||"—")}
+</span>
+</div>`
+:""
+}
+
+<div class="flex flex-wrap gap-2 mt-3">
+
+<label class="text-xs font-semibold">
+Action
+<select onchange="setPlanAction(${index},this.value)"
+ class="ml-2 border rounded-lg px-2 py-1">
+<option value="save" ${plan.action==="save"?"selected":""}>
+Save New
+</option>
+<option value="merge" ${plan.action==="merge"?"selected":""}
+${!plan.candidate?"disabled":""}>
+Merge
+</option>
+<option value="skip" ${plan.action==="skip"?"selected":""}>
+Skip
+</option>
+</select>
+</label>
+
+</div>
+`;
+
+        box.appendChild(div);
+    });
+}
+
+function setPlanAction(index,value){
+    if(currentDuplicatePlan[index]){
+        currentDuplicatePlan[index].action=value;
+    }
+}
+
+function closeDuplicateModal(){
+    document.getElementById("duplicateModal")
+        .classList.remove("show");
+}
+
+
+/* ============================================================
+   ACTUAL RECORD CREATION
+============================================================ */
+
+function recordFromPerson(p){
+
+    return {
+
+        id:makeId("person"),
+
+        personName:p.personName||"",
+        fatherName:p.fatherName||"",
+        personAge:p.personAge||"",
+        personAddress:p.personAddress||"",
+        policeStation:p.policeStation||"",
+
+        vehicleType:p.vehicleType||"",
+        cause:p.cause||"",
+        place:p.place||"",
+
+        accidentDate:p.accidentDate||"",
+        accidentTime:p.accidentTime||"",
+
+        status:p.status||"",
+
+        deathCount:p.deathCount||0,
+        injuredCount:p.injuredCount||0,
+
+        newsSource:
+            p.newsSource||
+            document.getElementById("newsSource").value,
+
+        newsLink:
+            p.newsLink||
+            document.getElementById("newsLink").value,
+
+        evidenceSentence:p.evidenceSentence||"",
+        extractionConfidence:p.confidence||0,
+
+        createdAt:new Date().toISOString(),
+        updatedAt:new Date().toISOString(),
+
+        mergedInto:"",
+        isMerged:false
+    };
+}
+
+function applySavePlan(){
+
+    const now=new Date().toISOString();
+
+    let saved=0;
+    let merged=0;
+    let skipped=0;
+
+    currentDuplicatePlan.forEach(plan=>{
+
+        const p=plan.person;
+
+        if(plan.action==="skip"){
+            skipped++;
+            return;
+        }
+
+        if(plan.action==="merge" && plan.candidate){
+
+            mergeRecords(
+                recordFromPerson(p),
+                plan.candidate
+            );
+
+            merged++;
+            return;
+        }
+
+        const record=recordFromPerson(p);
+
+        const c=linkRecordToCase(record);
+
+        record.caseId=c.id;
+
+        records.push(record);
+
+        saved++;
+
+        /*
+          Current article is also attached
+          to the same Case.
+        */
+
+        const source=
+            document.getElementById("newsSource").value;
+
+        const link=
+            document.getElementById("newsLink").value;
+
+        if(link){
+
+            const report=saveNewsReport({
+                title:
+                    document.getElementById("newsText").value
+                    .split("\n")[0]||
+                    "Accident News Report",
+
+                source:source||"Unknown Source",
+                link:link,
+                pubDate:record.accidentDate,
+                description:""
+            },c.id);
+
+            c.reportIds=c.reportIds||[];
+
+            if(!c.reportIds.includes(report.id)){
+                c.reportIds.push(report.id);
+            }
+
+            c.sourceNames=c.sourceNames||[];
+
+            if(!c.sourceNames.includes(report.source)){
+                c.sourceNames.push(report.source);
+            }
+        }
+    });
+
+    persistRecords();
+    persistCases();
+    persistNews();
+    persistMergeHistory();
+
+    closeDuplicateModal();
+
+    renderRecords();
+    renderCasesQuick();
+
+    alert(
+        `Save Plan पूरा हुआ।\n\n`+
+        `New: ${saved}\n`+
+        `Merged: ${merged}\n`+
+        `Skipped: ${skipped}`
+    );
+
+    extractedPersons=[];
+    renderMultiPersonPreview();
+}
+
+function mergeRecords(source,target){
+
+    const fields=[
+        "fatherName",
+        "personAge",
+        "personAddress",
+        "policeStation",
+        "vehicleType",
+        "cause",
+        "place",
+        "accidentDate",
+        "accidentTime",
+        "newsSource",
+        "newsLink",
+        "evidenceSentence"
+    ];
+
+    const filled=[];
+
+    fields.forEach(field=>{
+
+        if(!target[field] && source[field]){
+
+            target[field]=source[field];
+            filled.push(field);
+        }
+    });
+
+    target.updatedAt=new Date().toISOString();
+
+    /*
+      Preserve history instead of deleting duplicate.
+    */
+
+    const sourceId=source.id;
+
+    const history={
+        id:makeId("merge"),
+        caseId:target.caseId||"",
+        sourceRecordId:sourceId,
+        targetRecordId:target.id,
+        sourceName:source.personName,
+        targetName:target.personName,
+        score:personDuplicateScore(source,target),
+        action:"merged",
+        fieldsMerged:filled,
+        timestamp:new Date().toISOString()
+    };
+
+    mergeHistory.push(history);
+
+    /*
+      Keep a lightweight merged record in history.
+      It is not shown as active person.
+    */
+
+    source.mergedInto=target.id;
+    source.isMerged=true;
+    source.mergedAt=new Date().toISOString();
+
+    if(target.caseId){
+        source.caseId=target.caseId;
+    }
+
+    records.push(source);
+
+    persistRecords();
+    persistMergeHistory();
+}
+
+
+/* ============================================================
+   SINGLE SAVE / EDIT
+============================================================ */
+
+function getFormRecord(){
+
+    return {
+
+        id:
+            editingRecordId ||
+            makeId("person"),
+
+        personName:
+            document.getElementById("personName").value.trim(),
+
+        fatherName:
+            document.getElementById("fatherName").value.trim(),
+
+        personAge:
+            document.getElementById("personAge").value.trim(),
+
+        personAddress:
+            document.getElementById("personAddress").value.trim(),
+
+        policeStation:
+            document.getElementById("policeStation").value.trim(),
+
+        vehicleType:
+            document.getElementById("vehicleType").value.trim(),
+
+        cause:
+            document.getElementById("cause").value.trim(),
+
+        place:
+            document.getElementById("place").value.trim(),
+
+        accidentDate:
+            document.getElementById("accidentDate").value,
+
+        accidentTime:
+            document.getElementById("accidentTime").value.trim(),
+
+        status:
+            document.getElementById("status").value,
+
+        deathCount:
+            parseInt(
+                document.getElementById("deathCount").value||0
+            ),
+
+        injuredCount:
+            parseInt(
+                document.getElementById("injuredCount").value||0
+            ),
+
+        newsSource:
+            document.getElementById("newsSource").value.trim(),
+
+        newsLink:
+            document.getElementById("newsLink").value.trim(),
+
+        evidenceSentence:
+            editingRecordId
+            ? records.find(r=>r.id===editingRecordId)
+                ?.evidenceSentence||""
+            : "",
+
+        extractionConfidence:
+            editingRecordId
+            ? records.find(r=>r.id===editingRecordId)
+                ?.extractionConfidence||0
+            : 0,
+
+        createdAt:
+            editingRecordId
+            ? records.find(r=>r.id===editingRecordId)
+                ?.createdAt||new Date().toISOString()
+            : new Date().toISOString(),
+
+        updatedAt:new Date().toISOString(),
+
+        caseId:
+            editingRecordId
+            ? records.find(r=>r.id===editingRecordId)
+                ?.caseId||""
+            : ""
+    };
+}
+
+function saveRecord(){
+
+    const record=getFormRecord();
+
+    if(!record.personName){
+        alert("नाम आवश्यक है।");
+        return;
+    }
+
+    /*
+      Actual UPDATE
+    */
+
+    if(editingRecordId){
+
+        const index=records.findIndex(
+            r=>r.id===editingRecordId
+        );
+
+        if(index>=0){
+
+            const old=records[index];
+
+            const candidate=
+                getPersonDuplicateCandidates(
+                    record,
+                    old.id
+                )[0];
+
+            if(candidate && candidate.score>=70){
+
+                if(
+                    !confirm(
+                        `यह edited record दूसरे record से ${candidate.score}% match है।\n\nफिर भी update करें?`
+                    )
+                ){
+                    return;
+                }
+            }
+
+            record.caseId=old.caseId||"";
+
+            if(!record.caseId){
+
+                const c=linkRecordToCase(record);
+                record.caseId=c.id;
+            }
+
+            records[index]={
+                ...old,
+                ...record
+            };
+
+            persistRecords();
+            renderRecords();
+            renderCasesQuick();
+
+            editingRecordId=null;
+
+            alert("Record successfully updated.");
+
+            updateSaveButton();
+
+            return;
+        }
+    }
+
+    const candidate=
+        getPersonDuplicateCandidates(record)[0];
+
+    if(candidate && candidate.score>=70){
+
+        if(
+            !confirm(
+                `यह record ${candidate.score}% duplicate match है।\n\nफिर भी Save करना है?`
+            )
+        ){
+            return;
+        }
+    }
+
+    const c=linkRecordToCase(record);
+
+    record.caseId=c.id;
+
+    records.push(record);
+
+    attachCurrentArticleToCase(c.id);
+
+    persistRecords();
+    persistCases();
+
+    renderRecords();
+    renderCasesQuick();
+
+    alert("Record successfully saved.");
+}
+
+function attachCurrentArticleToCase(caseId){
+
+    const link=document.getElementById("newsLink").value.trim();
+
+    if(!link) return;
+
+    const item={
+        title:
+            document.getElementById("newsText").value
+                .split("\n")[0]||
+                "Accident News Report",
+
+        source:
+            document.getElementById("newsSource").value||
+            "Unknown Source",
+
+        link:link,
+
+        pubDate:
+            document.getElementById("accidentDate").value,
+
+        description:""
+    };
+
+    const report=saveNewsReport(item,caseId);
+
+    const c=cases.find(x=>x.id===caseId);
+
+    if(c){
+
+        c.reportIds=c.reportIds||[];
+
+        if(!c.reportIds.includes(report.id)){
+            c.reportIds.push(report.id);
+        }
+
+        c.sourceNames=c.sourceNames||[];
+
+        if(!c.sourceNames.includes(report.source)){
+            c.sourceNames.push(report.source);
+        }
+
+        c.updatedAt=new Date().toISOString();
+
+        persistCases();
+    }
+}
+
+function updateSaveButton(){
+
+    const btn=document.querySelector(
+        'button[onclick="saveRecord()"]'
+    );
+
+    if(btn){
+        btn.textContent=
+            editingRecordId
+            ? "💾 Update Record"
+            : "💾 Save Record";
+    }
+}
+
+
+/* ============================================================
+   RECORDS
+============================================================ */
+
+function renderRecords(){
+
+    const tbody=document.getElementById("recordsTable");
+
+    tbody.innerHTML="";
+
+    const activeRecords=
+        records.filter(r=>!r.mergedInto);
+
+    activeRecords.forEach((record,index)=>{
+
+        const tr=document.createElement("tr");
+
+        const c=cases.find(x=>x.id===record.caseId);
+
+        tr.innerHTML=`
+
+<td class="border p-2">${index+1}</td>
+
+<td class="border p-2 font-semibold">
+${escapeHTML(record.personName||"—")}
+</td>
+
+<td class="border p-2">
+${escapeHTML(record.fatherName||"—")}
+</td>
+
+<td class="border p-2">
+${escapeHTML(record.vehicleType||"—")}
+</td>
+
+<td class="border p-2">
+${escapeHTML(record.place||"—")}
+</td>
+
+<td class="border p-2">
+${
+record.status==="Fatal"
+?"मृतक"
+:record.status==="Injured"
+?"घायल"
+:"अन्य"
+}
+</td>
+
+<td class="border p-2">
+${escapeHTML(record.accidentDate||"—")}
+</td>
+
+<td class="border p-2">
+${escapeHTML(record.newsSource||"—")}
+</td>
+
+<td class="border p-2">
+
+<button onclick="viewCase('${escapeAttribute(record.caseId||"")}')"
+ class="case-pill">
+${escapeHTML(
+    c
+    ? "Case "+c.id.slice(-5)
+    : "No Case"
+)}
+</button>
+
+</td>
+
+<td class="border p-2">
+
+<div class="flex gap-1 flex-wrap">
+
+<button onclick="editSavedRecord('${escapeAttribute(record.id)}')"
+ class="bg-blue-600 text-white px-2 py-1 rounded-lg text-xs">
+Edit
+</button>
+
+<button onclick="viewCase('${escapeAttribute(record.caseId||"")}')"
+ class="bg-indigo-700 text-white px-2 py-1 rounded-lg text-xs">
+Case
+</button>
+
+<button onclick="deleteRecordById('${escapeAttribute(record.id)}')"
+ class="bg-red-600 text-white px-2 py-1 rounded-lg text-xs">
+Delete
+</button>
+
+</div>
+
+</td>
+`;
+
+        tbody.appendChild(tr);
+    });
+
+    document.getElementById("recordCount").textContent=
+        activeRecords.length;
+
+    updateChart();
+}
+
+function editSavedRecord(id){
+
+    const r=records.find(x=>x.id===id);
+
+    if(!r) return;
+
+    editingRecordId=id;
+
+    [
+        ["personName",r.personName],
+        ["fatherName",r.fatherName],
+        ["personAge",r.personAge],
+        ["personAddress",r.personAddress],
+        ["policeStation",r.policeStation],
+        ["vehicleType",r.vehicleType],
+        ["cause",r.cause],
+        ["place",r.place],
+        ["accidentDate",r.accidentDate],
+        ["accidentTime",r.accidentTime],
+        ["status",r.status],
+        ["deathCount",r.deathCount],
+        ["injuredCount",r.injuredCount],
+        ["newsSource",r.newsSource],
+        ["newsLink",r.newsLink]
+    ].forEach(([id,value])=>{
+        document.getElementById(id).value=value??"";
+    });
+
+    updateSaveButton();
+
+    window.scrollTo({
+        top:0,
+        behavior:"smooth"
+    });
+}
+
+function deleteRecordById(id){
+
+    if(!confirm(
+        "क्या आप इस record को delete करना चाहते हैं?"
+    )){
+        return;
+    }
+
+    const index=records.findIndex(r=>r.id===id);
+
+    if(index<0) return;
+
+    const record=records[index];
+
+    /*
+      Keep merge/history information.
+      Remove only active person.
+    */
+
+    records.splice(index,1);
+
+    persistRecords();
+
+    renderRecords();
+    renderCasesQuick();
+
+    if(currentCaseId){
+        renderCaseDashboard(currentCaseId);
+    }
+}
+
+
+/* ============================================================
+   CASE QUICK VIEW
+============================================================ */
+
+function renderCasesQuick(){
+
+    const box=document.getElementById("casesQuick");
+
+    if(!box) return;
+
+    box.innerHTML="";
+
+    if(!cases.length){
+
+        box.innerHTML=`
+            <div class="border rounded-xl p-5 muted md:col-span-3">
+                अभी कोई Case नहीं बना है। Record save करने पर Case स्वतः बनेगा।
+            </div>
+        `;
+
+        return;
+    }
+
+    cases
+        .slice()
+        .sort((a,b)=>
+            new Date(b.updatedAt||b.createdAt)-
+            new Date(a.updatedAt||a.createdAt)
+        )
+        .forEach(c=>{
+
+            const people=
+                records.filter(r=>
+                    r.caseId===c.id &&
+                    !r.mergedInto
+                );
+
+            const fatal=
+                people.filter(r=>r.status==="Fatal").length;
+
+            const injured=
+                people.filter(r=>r.status==="Injured").length;
+
+            const reports=
+                newsReports.filter(r=>r.caseId===c.id);
+
+            const sources=
+                [...new Set(
+                    reports.map(r=>r.source)
+                )];
+
+            const div=document.createElement("div");
+
+            div.className=
+                "border rounded-xl p-4 hover:shadow-lg";
+
+            div.innerHTML=`
+
+<div class="flex justify-between gap-2">
+
+<div>
+<h3 class="font-bold">
+${escapeHTML(c.title||"Accident Case")}
+</h3>
+
+<div class="text-xs muted mt-1">
+${escapeHTML(c.accidentDate||"—")}
+•
+${escapeHTML(c.place||"स्थान नहीं")}
+</div>
+</div>
+
+<span class="case-pill">
+${people.length} Persons
+</span>
+
+</div>
+
+<div class="grid grid-cols-3 gap-2 mt-4 text-center">
+
+<div class="stat-box">
+<div class="text-xl font-bold text-red-600">${fatal}</div>
+<div class="text-xs">मृतक</div>
+</div>
+
+<div class="stat-box">
+<div class="text-xl font-bold text-orange-600">${injured}</div>
+<div class="text-xs">घायल</div>
+</div>
+
+<div class="stat-box">
+<div class="text-xl font-bold text-blue-600">${reports.length}</div>
+<div class="text-xs">Reports</div>
+</div>
+
+</div>
+
+<div class="mt-3 text-xs muted">
+Sources: ${escapeHTML(
+    sources.length
+    ? sources.join(", ")
+    : "अभी report link नहीं"
+)}
+</div>
+
+<button onclick="viewCase('${escapeAttribute(c.id)}')"
+ class="mt-4 w-full bg-indigo-700 text-white px-3 py-2 rounded-lg font-semibold">
+🧠 Open Case Intelligence
+</button>
+`;
+
+            box.appendChild(div);
+        });
+}
+
+
+/* ============================================================
+   CASE DASHBOARD
+============================================================ */
+
+function viewCase(caseId){
+
+    if(!caseId){
+        alert("इस record से कोई Case linked नहीं है।");
+        return;
+    }
+
+    currentCaseId=caseId;
+
+    renderCaseDashboard(caseId);
+
+    document.getElementById("caseModal")
+        .classList.add("show");
+}
+
+function closeCaseModal(){
+
+    document.getElementById("caseModal")
+        .classList.remove("show");
+
+    currentCaseId=null;
+}
+
+function renderCaseDashboard(caseId){
+
+    const c=cases.find(x=>x.id===caseId);
+
+    if(!c) return;
+
+    const people=
+        records.filter(r=>
+            r.caseId===caseId &&
+            !r.mergedInto
+        );
+
+    const merged=
+        records.filter(r=>
+            r.caseId===caseId &&
+            r.mergedInto
+        );
+
+    const reports=
+        newsReports.filter(r=>r.caseId===caseId);
+
+    const history=
+        mergeHistory.filter(h=>h.caseId===caseId);
+
+    const fatal=
+        people.filter(r=>r.status==="Fatal");
+
+    const injured=
+        people.filter(r=>r.status==="Injured");
+
+    const sourceMap={};
+
+    reports.forEach(r=>{
+        sourceMap[r.source]=
+            (sourceMap[r.source]||0)+1;
+    });
+
+    document.getElementById("caseModalTitle").textContent=
+        "🧠 "+(c.title||"Case Intelligence Dashboard");
+
+    document.getElementById("caseModalSubtitle").textContent=
+        `${c.accidentDate||"तारीख नहीं"} • ${
+            c.place||"स्थान नहीं"
+        } • Case ID: ${c.id}`;
+
+    const dashboard=document.getElementById(
+        "caseDashboard"
+    );
+
+    dashboard.innerHTML=`
+
+<!-- SUMMARY -->
+
+<section>
+
+<h3 class="text-lg font-bold mb-3">
+📌 Case Summary
+</h3>
+
+<div class="dashboard-grid">
+
+<div class="stat-box">
+<div class="text-2xl font-bold">${people.length}</div>
+<div class="text-xs muted">Active Persons</div>
+</div>
+
+<div class="stat-box">
+<div class="text-2xl font-bold text-red-600">${fatal.length}</div>
+<div class="text-xs muted">मृतक</div>
+</div>
+
+<div class="stat-box">
+<div class="text-2xl font-bold text-orange-600">${injured.length}</div>
+<div class="text-xs muted">घायल</div>
+</div>
+
+<div class="stat-box">
+<div class="text-2xl font-bold text-blue-600">${reports.length}</div>
+<div class="text-xs muted">News Reports</div>
+</div>
+
+<div class="stat-box">
+<div class="text-2xl font-bold text-purple-600">
+${Object.keys(sourceMap).length}
+</div>
+<div class="text-xs muted">Sources</div>
+</div>
+
+<div class="stat-box">
+<div class="text-2xl font-bold text-slate-600">${merged.length}</div>
+<div class="text-xs muted">Merged History</div>
+</div>
+
+</div>
+
+<div class="grid md:grid-cols-2 gap-3 mt-4">
+
+<div class="border rounded-xl p-4">
+<b>घटना की तारीख:</b>
+${escapeHTML(c.accidentDate||"—")}
+<br>
+<b>स्थान:</b>
+${escapeHTML(c.place||"—")}
+<br>
+<b>थाना:</b>
+${escapeHTML(c.policeStation||"—")}
+</div>
+
+<div class="border rounded-xl p-4">
+<b>Sources:</b>
+<div class="flex flex-wrap gap-2 mt-2">
+${
+Object.entries(sourceMap).map(
+([name,count])=>
+`<span class="source-badge">
+${escapeHTML(name)} × ${count}
+</span>`
+).join("")
+||"—"
+}
+</div>
+</div>
+
+</div>
+
+</section>
+
+
+<!-- SOURCE CORROBORATION -->
+
+<section>
+
+<h3 class="text-lg font-bold mb-3">
+📰 Source-wise Corroboration / Coverage
+</h3>
+
+<div class="grid md:grid-cols-2 lg:grid-cols-4 gap-3">
+
+${
+Object.entries(
+    buildSourceCoverage(reports)
+).map(([source,data])=>`
+
+<div class="border rounded-xl p-4">
+
+<div class="font-bold">
+${escapeHTML(source)}
+</div>
+
+<div class="text-2xl font-bold text-blue-600 mt-2">
+${data.count}
+</div>
+
+<div class="text-xs muted">
+News Reports
+</div>
+
+${
+data.links.slice(0,3).map(
+link=>
+`<a href="${escapeAttribute(link)}"
+target="_blank"
+rel="noopener"
+class="block text-xs text-blue-600 mt-2 truncate">
+🔗 Source Report
+</a>`
+).join("")
+}
+
+</div>
+`).join("")
+||`
+<div class="border rounded-xl p-4 muted">
+अभी source report उपलब्ध नहीं।
+</div>`
+}
+
+</div>
+
+<p class="text-xs muted mt-3">
+यह section उपलब्ध saved reports की source coverage दिखाता है।
+यह स्वतः यह दावा नहीं करता कि हर source ने एक ही तथ्य independently verify किया है।
+</p>
+
+</section>
+
+
+<!-- NEWS REPORTS -->
+
+<section>
+
+<div class="flex justify-between items-center">
+<h3 class="text-lg font-bold">
+📄 सभी News Reports (${reports.length})
+</h3>
+
+<button onclick="openCasePrint()"
+class="bg-emerald-700 text-white px-3 py-2 rounded-lg text-sm">
+🖨️ Selected Fields
+</button>
+</div>
+
+<div class="space-y-3 mt-3">
+
+${
+reports.length
+?
+reports.map((r,i)=>`
+
+<div class="case-report border rounded-xl p-4">
+
+<div class="flex flex-wrap justify-between gap-2">
+
+<div>
+<span class="source-badge">
+${escapeHTML(r.source||"Unknown")}
+</span>
+
+<span class="text-xs muted ml-2">
+${escapeHTML(formatDate(r.published))}
+</span>
+</div>
+
+</div>
+
+<h4 class="font-bold mt-2">
+${escapeHTML(r.title||"Untitled")}
+</h4>
+
+${
+r.description
+?
+`<p class="text-sm muted mt-2">
+${escapeHTML(r.description).slice(0,500)}
+</p>`
+:""
+}
+
+${
+r.link
+?
+`<a href="${escapeAttribute(r.link)}"
+target="_blank"
+rel="noopener"
+class="inline-block mt-3 text-sm text-blue-600 font-semibold">
+🔗 Open Original Report
+</a>`
+:""
+}
+
+</div>
+
+`).join("")
+:
+`
+<div class="border rounded-xl p-5 muted">
+इस Case में अभी कोई saved news report नहीं है।
+</div>
+`
+}
+
+</div>
+
+</section>
+
+
+<!-- FATAL -->
+
+<section>
+
+<h3 class="text-lg font-bold mb-3">
+🟥 सभी मृतक (${fatal.length})
+</h3>
+
+${renderCasePeopleHTML(fatal)}
+
+</section>
+
+
+<!-- INJURED -->
+
+<section>
+
+<h3 class="text-lg font-bold mb-3">
+🟧 सभी घायल (${injured.length})
+</h3>
+
+${renderCasePeopleHTML(injured)}
+
+</section>
+
+
+<!-- MERGE HISTORY -->
+
+<section>
+
+<h3 class="text-lg font-bold mb-3">
+🔀 Duplicate / Merged Records
+</h3>
+
+${
+history.length
+?
+history.map(h=>`
+
+<div class="border rounded-xl p-4 mb-2">
+
+<div class="flex flex-wrap justify-between gap-2">
+
+<div>
+<b>${escapeHTML(h.sourceName||"Record")}</b>
+→
+<b>${escapeHTML(h.targetName||"Record")}</b>
+</div>
+
+<span class="case-pill strong-duplicate">
+${h.score||0}% Match
+</span>
+
+</div>
+
+<div class="text-xs muted mt-2">
+Action: ${escapeHTML(h.action||"merged")}
+•
+${escapeHTML(formatDate(h.timestamp))}
+</div>
+
+${
+h.fieldsMerged?.length
+?
+`<div class="text-xs mt-2">
+Merged fields:
+${escapeHTML(h.fieldsMerged.join(", "))}
+</div>`
+:""
+}
+
+</div>
+
+`).join("")
+:
+`
+<div class="border rounded-xl p-5 muted">
+इस Case में अभी कोई merge history नहीं है।
+</div>
+`
+}
+
+</section>
+
+
+<!-- TIMELINE -->
+
+<section>
+
+<h3 class="text-lg font-bold mb-3">
+🕒 Case Timeline
+</h3>
+
+<div class="border rounded-xl p-5">
+
+${renderTimeline(caseId)}
+
+</div>
+
+</section>
+
+`;
+
+}
+
+function buildSourceCoverage(reports){
+
+    const map={};
+
+    reports.forEach(r=>{
+
+        const source=r.source||"Unknown";
+
+        if(!map[source]){
+            map[source]={
+                count:0,
+                links:[]
+            };
+        }
+
+        map[source].count++;
+
+        if(r.link && !map[source].links.includes(r.link)){
+            map[source].links.push(r.link);
+        }
+    });
+
+    return map;
+}
+
+function renderCasePeopleHTML(people){
+
+    if(!people.length){
+
+        return `
+        <div class="border rounded-xl p-5 muted">
+            कोई active person record नहीं।
+        </div>
+        `;
+    }
+
+    return `
+    <div class="grid md:grid-cols-2 gap-3">
+
+    ${
+    people.map(r=>`
+
+    <div class="border rounded-xl p-4">
+
+    <div class="flex justify-between gap-2">
+
+    <div>
+    <b class="text-lg">
+    ${escapeHTML(r.personName||"—")}
+    </b>
+
+    <div class="text-xs muted mt-1">
+    ${escapeHTML(r.fatherName||"पिता उपलब्ध नहीं")}
+    </div>
+    </div>
+
+    <span class="confidence">
+    ${r.extractionConfidence||0}%
+    </span>
+
+    </div>
+
+    <div class="grid grid-cols-2 gap-2 text-xs mt-3">
+
+    <div><b>उम्र:</b> ${escapeHTML(r.personAge||"—")}</div>
+    <div><b>वाहन:</b> ${escapeHTML(r.vehicleType||"—")}</div>
+    <div><b>स्थान:</b> ${escapeHTML(r.place||"—")}</div>
+    <div><b>कारण:</b> ${escapeHTML(r.cause||"—")}</div>
+    <div><b>थाना:</b> ${escapeHTML(r.policeStation||"—")}</div>
+    <div><b>समय:</b> ${escapeHTML(r.accidentTime||"—")}</div>
+
+    </div>
+
+    <div class="mt-3 flex gap-2 flex-wrap">
+
+    <button onclick="editSavedRecord('${escapeAttribute(r.id)}')"
+    class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs">
+    ✏️ Edit
+    </button>
+
+    <button onclick="deleteRecordById('${escapeAttribute(r.id)}')"
+    class="bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs">
+    Delete
+    </button>
+
+    </div>
+
+    ${
+    r.evidenceSentence
+    ?
+    `<div class="bg-slate-50 dark:bg-slate-800 rounded-lg p-3 text-xs mt-3">
+    <b>Evidence:</b>
+    ${escapeHTML(r.evidenceSentence)}
+    </div>`
+    :""
+    }
+
+    </div>
+
+    `).join("")
+    }
+
+    </div>
+    `;
+}
+
+
+/* ============================================================
+   TIMELINE
+============================================================ */
+
+function renderTimeline(caseId){
+
+    const events=[];
+
+    newsReports
+        .filter(r=>r.caseId===caseId)
+        .forEach(r=>{
+            events.push({
+                date:r.published||r.createdAt,
+                type:"News Report",
+                title:r.title,
+                detail:r.source
+            });
+        });
+
+    records
+        .filter(r=>r.caseId===caseId)
+        .forEach(r=>{
+            events.push({
+                date:r.createdAt,
+                type:"Person Record",
+                title:r.personName,
+                detail:r.status==="Fatal"
+                    ?"मृतक record"
+                    :"घायल record"
+            });
+        });
+
+    mergeHistory
+        .filter(h=>h.caseId===caseId)
+        .forEach(h=>{
+            events.push({
+                date:h.timestamp,
+                type:"Duplicate Merge",
+                title:
+                    `${h.sourceName} → ${h.targetName}`,
+                detail:`${h.score}% match`
+            });
+        });
+
+    events.sort((a,b)=>
+        new Date(a.date)-new Date(b.date)
+    );
+
+    if(!events.length){
+
+        return `
+        <div class="muted">
+            Timeline के लिए अभी data उपलब्ध नहीं है।
+        </div>
+        `;
+    }
+
+    return events.map(e=>`
+
+    <div class="timeline-item">
+
+    <div class="text-xs muted">
+    ${escapeHTML(
+        e.date
+        ? formatDate(e.date)
+        : "—"
+    )}
+    </div>
+
+    <div class="font-bold mt-1">
+    ${escapeHTML(e.type)}
+    </div>
+
+    <div class="text-sm">
+    ${escapeHTML(e.title||"")}
+    </div>
+
+    <div class="text-xs muted">
+    ${escapeHTML(e.detail||"")}
+    </div>
+
+    </div>
+
+    `).join("");
+}
+
+
+/* ============================================================
+   CASE PRINT
+============================================================ */
+
+const PRINT_FIELDS_DEFAULT=[
+    "personName",
+    "fatherName",
+    "personAge",
+    "personAddress",
+    "policeStation",
+    "vehicleType",
+    "cause",
+    "place",
+    "accidentDate",
+    "accidentTime",
+    "status",
+    "newsSource",
+    "newsLink",
+    "extractionConfidence",
+    "evidenceSentence"
+];
+
+const FIELD_LABELS={
+    personName:"नाम",
+    fatherName:"पिता / पति",
+    personAge:"उम्र",
+    personAddress:"पता",
+    policeStation:"थाना",
+    vehicleType:"वाहन",
+    cause:"कारण",
+    place:"स्थान",
+    accidentDate:"घटना की तारीख",
+    accidentTime:"घटना का समय",
+    status:"स्थिति",
+    newsSource:"News Source",
+    newsLink:"Source Link",
+    extractionConfidence:"Extraction Confidence",
+    evidenceSentence:"Evidence Sentence"
+};
+
+function getPrintFields(){
+
+    const saved=loadJSON(PRINT_KEY,null);
+
+    if(Array.isArray(saved)&&saved.length){
+        return saved;
+    }
+
+    return PRINT_FIELDS_DEFAULT.slice();
+}
+
+function openAllPrint(){
+
+    currentCaseId=null;
+
+    renderPrintFieldSelector();
+
+    document.getElementById("printModal")
+        .classList.add("show");
+}
+
+function openCasePrint(){
+
+    renderPrintFieldSelector();
+
+    document.getElementById("printModal")
+        .classList.add("show");
+}
+
+function closePrintModal(){
+
+    document.getElementById("printModal")
+        .classList.remove("show");
+}
+
+function renderPrintFieldSelector(){
+
+    const box=document.getElementById("printFields");
+    const selected=getPrintFields();
+
+    box.innerHTML="";
+
+    PRINT_FIELDS_DEFAULT.forEach(field=>{
+
+        const div=document.createElement("label");
+
+        div.className="print-field";
+
+        div.innerHTML=`
+
+<input type="checkbox"
+ value="${field}"
+ ${selected.includes(field)?"checked":""}>
+
+<span class="text-sm">
+${escapeHTML(FIELD_LABELS[field])}
+</span>
+`;
+
+        box.appendChild(div);
+    });
+}
+
+function savePrintSettings(){
+
+    const fields=[
+        ...document.querySelectorAll(
+            '#printFields input:checked'
+        )
+    ].map(x=>x.value);
+
+    if(!fields.length){
+        alert("कम से कम एक field select करें।");
+        return;
+    }
+
+    persist(PRINT_KEY,fields);
+
+    alert("Print field selection saved.");
+}
+
+function printSelectedAll(){
+
+    savePrintSettings();
+
+    closePrintModal();
+
+    const fields=getPrintFields();
+
+    const title="CyberNexus — Accident Records";
+
+    let html=`
+
+<h2>${title}</h2>
+
+<p>
+Generated: ${escapeHTML(
+    new Date().toLocaleString("hi-IN")
+)}
+</p>
+
+<table style="
+border-collapse:collapse;
+width:100%;
+font-size:12px;
+">
+
+<tr>
+${fields.map(f=>
+`<th style="border:1px solid #000;padding:6px">
+${escapeHTML(FIELD_LABELS[f])}
+</th>`
+).join("")}
+</tr>
+
+`;
+
+records
+.filter(r=>!r.mergedInto)
+.forEach(r=>{
+
+    html+="<tr>";
+
+    fields.forEach(f=>{
+        html+=`
+        <td style="border:1px solid #000;padding:6px">
+        ${escapeHTML(r[f]||"")}
+        </td>
+        `;
+    });
+
+    html+="</tr>";
+});
+
+html+="</table>";
+
+openPrintWindow(html);
+}
+
+function openPrintWindow(html){
+
+    const w=window.open(
+        "",
+        "_blank",
+        "width=1200,height=800"
+    );
+
+    if(!w){
+
+        alert(
+            "Print window blocked है। Browser popup allow करें।"
+        );
+
+        return;
+    }
+
+    w.document.write(`
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<title>CyberNexus Print</title>
+<style>
+body{
+    font-family:Arial,Helvetica,sans-serif;
+    padding:20px;
+}
+table{
+    page-break-inside:auto;
+}
+tr{
+    page-break-inside:avoid;
+}
+th{
+    background:#eee;
+}
+</style>
+</head>
+<body>
+${html}
+<script>
+window.onload=function(){
+    window.print();
+};
+<\/script>
+</body>
+</html>
+`);
+
+    w.document.close();
+}
+
+function openCasePrint(){
+
+    if(!currentCaseId){
+        openAllPrint();
+        return;
+    }
+
+    renderPrintFieldSelector();
+
+    document.getElementById("printModal")
+        .classList.add("show");
+
+    /*
+      Change button behavior to case print
+      without creating another settings system.
+    */
+
+    const btn=document.querySelector(
+        '#printModal button[onclick="printSelectedAll()"]'
+    );
+
+    if(btn){
+        btn.textContent="🖨️ Print This Case";
+        btn.onclick=printSelectedCase;
+    }
+}
+
+function printSelectedCase(){
+
+    savePrintSettings();
+
+    closePrintModal();
+
+    if(!currentCaseId) return;
+
+    const c=cases.find(x=>x.id===currentCaseId);
+
+    const people=records.filter(r=>
+        r.caseId===currentCaseId &&
+        !r.mergedInto
+    );
+
+    const fields=getPrintFields();
+
+    let html=`
+
+<h2>CyberNexus — Case Intelligence Report</h2>
+
+<h3>${escapeHTML(c?.title||"Accident Case")}</h3>
+
+<p>
+<strong>Case ID:</strong>
+${escapeHTML(c?.id||"")}
+</p>
+
+<p>
+<strong>घटना:</strong>
+${escapeHTML(c?.accidentDate||"—")}
+•
+${escapeHTML(c?.place||"—")}
+</p>
+
+<h3>Persons</h3>
+
+<table style="
+border-collapse:collapse;
+width:100%;
+font-size:12px;
+">
+
+<tr>
+${fields.map(f=>
+`<th style="border:1px solid #000;padding:6px">
+${escapeHTML(FIELD_LABELS[f])}
+</th>`
+).join("")}
+</tr>
+`;
+
+    people.forEach(r=>{
+
+        html+="<tr>";
+
+        fields.forEach(f=>{
+
+            html+=`
+            <td style="border:1px solid #000;padding:6px">
+            ${escapeHTML(r[f]||"")}
+            </td>
+            `;
+        });
+
+        html+="</tr>";
+    });
+
+    html+="</table>";
+
+    const reports=newsReports.filter(
+        r=>r.caseId===currentCaseId
+    );
+
+    html+=`
+
+<h3>News Reports</h3>
+
+<ul>
+${
+reports.map(r=>
+`<li>
+${escapeHTML(r.source||"")} —
+${escapeHTML(r.title||"")}
+</li>`
+).join("")
+}
+</ul>
+
+`;
+
+    openPrintWindow(html);
+}
+
+
+/* ============================================================
+   WORD EXPORT
+============================================================ */
+
+function exportWord(){
+
+    const active=records.filter(r=>!r.mergedInto);
+
+    if(!active.length){
+
+        alert(
+            "Export करने के लिए कोई record नहीं है।"
+        );
+
+        return;
+    }
+
+    let html=`
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+body{font-family:Arial}
+table{
+border-collapse:collapse;
+width:100%;
+}
+th,td{
+border:1px solid #000;
+padding:6px;
+}
+th{background:#ddd}
+</style>
+</head>
+<body>
+
+<h2>CyberNexus Accident Records V4.5</h2>
+
+<table>
+
+<tr>
+<th>#</th>
+<th>नाम</th>
+<th>पिता</th>
+<th>उम्र</th>
+<th>पता</th>
+<th>थाना</th>
+<th>वाहन</th>
+<th>कारण</th>
+<th>स्थान</th>
+<th>तारीख</th>
+<th>समय</th>
+<th>स्थिति</th>
+<th>Source</th>
+<th>Case ID</th>
+</tr>
+`;
+
+active.forEach((r,i)=>{
+
+    html+=`
+<tr>
+<td>${i+1}</td>
+<td>${escapeHTML(r.personName||"")}</td>
+<td>${escapeHTML(r.fatherName||"")}</td>
+<td>${escapeHTML(r.personAge||"")}</td>
+<td>${escapeHTML(r.personAddress||"")}</td>
+<td>${escapeHTML(r.policeStation||"")}</td>
+<td>${escapeHTML(r.vehicleType||"")}</td>
+<td>${escapeHTML(r.cause||"")}</td>
+<td>${escapeHTML(r.place||"")}</td>
+<td>${escapeHTML(r.accidentDate||"")}</td>
+<td>${escapeHTML(r.accidentTime||"")}</td>
+<td>${escapeHTML(r.status||"")}</td>
+<td>${escapeHTML(r.newsSource||"")}</td>
+<td>${escapeHTML(r.caseId||"")}</td>
+</tr>
+`;
+});
+
+html+=`
+</table>
+</body>
+</html>
+`;
+
+const blob=new Blob(
+    [html],
+    {type:"application/msword"}
+);
+
+const url=URL.createObjectURL(blob);
+
+const a=document.createElement("a");
+
+a.href=url;
+a.download="CyberNexus_V4.5_Accident_Records.doc";
+
+a.click();
+
+setTimeout(
+    ()=>URL.revokeObjectURL(url),
+    1000
+);
+}
+
+
+/* ============================================================
+   CLEAR
+============================================================ */
+
+function clearForm(){
+
+    editingRecordId=null;
+
+    [
+        "personName",
+        "fatherName",
+        "personAge",
+        "personAddress",
+        "policeStation",
+        "vehicleType",
+        "cause",
+        "place",
+        "accidentTime",
+        "deathCount",
+        "injuredCount",
+        "newsSource",
+        "newsLink"
+    ].forEach(id=>{
+
+        const el=document.getElementById(id);
+
+        if(el) el.value="";
+    });
+
+    document.getElementById("newsText").value="";
+
+    document.getElementById("accidentDate").value=
+        localDateInput();
+
+    document.getElementById("status").value="";
+
+    updateSaveButton();
+}
+
+
+/* ============================================================
+   CHART
+============================================================ */
+
+function updateChart(){
+
+    const counts={};
+
+    records
+        .filter(r=>!r.mergedInto)
+        .forEach(record=>{
+
+            const vehicle=
+                record.vehicleType||"अन्य";
+
+            counts[vehicle]=
+                (counts[vehicle]||0)+1;
+        });
+
+    const canvas=document.getElementById(
+        "vehicleChart"
+    );
+
+    if(!canvas) return;
+
+    if(vehicleChart){
+        vehicleChart.destroy();
+    }
+
+    vehicleChart=new Chart(
+        canvas,
+        {
+            type:"doughnut",
+
+            data:{
+                labels:Object.keys(counts),
+
+                datasets:[{
+                    data:Object.values(counts)
+                }]
+            },
+
+            options:{
+                responsive:true,
+                plugins:{
+                    legend:{
+                        position:"bottom"
+                    }
+                }
+            }
+        }
+    );
+}
+
+
+/* ============================================================
+   MIGRATION / BACKWARD COMPATIBILITY
+============================================================ */
+
+function migrateOldRecords(){
+
+    let changed=false;
+
+    records=records.map(r=>{
+
+        if(!r.id){
+            r.id=makeId("person");
+            changed=true;
+        }
+
+        if(!r.createdAt){
+            r.createdAt=new Date().toISOString();
+            changed=true;
+        }
+
+        if(!r.updatedAt){
+            r.updatedAt=r.createdAt;
+            changed=true;
+        }
+
+        if(r.mergedInto===undefined){
+            r.mergedInto="";
+            changed=true;
+        }
+
+        if(r.isMerged===undefined){
+            r.isMerged=false;
+            changed=true;
+        }
+
+        if(!r.caseId){
+
+            const c=getOrCreateCase(r);
+
+            r.caseId=c.id;
+
+            changed=true;
+        }
+
+        return r;
+    });
+
+    if(changed){
+        persistRecords();
+        persistCases();
+    }
+}
+
+
+/* ============================================================
+   REBUILD CASE REPORT LINKS
+============================================================ */
+
+function rebuildCaseReportLinks(){
+
+    let changed=false;
+
+    cases.forEach(c=>{
+
+        c.reportIds=c.reportIds||[];
+        c.sourceNames=c.sourceNames||[];
+
+        newsReports
+            .filter(r=>r.caseId===c.id)
+            .forEach(r=>{
+
+                if(!c.reportIds.includes(r.id)){
+                    c.reportIds.push(r.id);
+                    changed=true;
+                }
+
+                if(
+                    r.source &&
+                    !c.sourceNames.includes(r.source)
+                ){
+                    c.sourceNames.push(r.source);
+                    changed=true;
+                }
+            });
+    });
+
+    if(changed){
+        persistCases();
+    }
+}
+
+
+/* ============================================================
+   KEYBOARD
+============================================================ */
+
+document
+.getElementById("searchKeyword")
+.addEventListener("keydown",function(event){
+
+    if(event.key==="Enter"){
+
+        event.preventDefault();
+
+        scanInternet();
+    }
+});
+
+
+/* ============================================================
+   DATE DEFAULT
+============================================================ */
+
+document.getElementById("accidentDate").value=
+    localDateInput();
+
+
+/* ============================================================
+   INITIALIZATION
+============================================================ */
+
+migrateOldRecords();
+rebuildCaseReportLinks();
+
+renderRecords();
+renderCasesQuick();
+
+updateSaveButton();
+
+
+/* ============================================================
+   DEBUG / API
+============================================================ */
+
+window.CyberNexus={
+
+    version:"V4.5",
+
+    records:()=>records,
+
+    cases:()=>cases,
+
+    newsReports:()=>newsReports,
+
+    mergeHistory:()=>mergeHistory,
+
+    searchResults:()=>currentNewsResults,
+
+    extractedPersons:()=>extractedPersons,
+
+    extract:extractAllPersons,
+
+    saveAll:saveAllPersons,
+
+    openCase:viewCase,
+
+    duplicateScore:personDuplicateScore,
+
+    caseSimilarity:caseSimilarity
+};
+
+
+/* ============================================================
+   MODAL CLICK OUTSIDE
+============================================================ */
+
+document.getElementById("caseModal")
+.addEventListener("click",function(e){
+
+    if(e.target===this){
+        closeCaseModal();
+    }
+});
+
+document.getElementById("duplicateModal")
+.addEventListener("click",function(e){
+
+    if(e.target===this){
+        closeDuplicateModal();
+    }
+});
+
+document.getElementById("printModal")
+.addEventListener("click",function(e){
+
+    if(e.target===this){
+        closePrintModal();
+    }
+});
+
+</script>
+
+</body>
+</html>
